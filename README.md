@@ -70,7 +70,7 @@ npm run dev
 
 ## 📁 Project Structure
 ```
-cc-kelompok-a-extraordinary/
+cc-kelompok-a-nexa/
 │
 ├── backend/
 │   ├── .env
