@@ -96,7 +96,176 @@ cc-kelompok-a-nexa/
 └── README.md
 
 ```
+## Dokumentasi Endopoit
 
+### Health Check
+
+Method  : GET  <br>
+URL : /health <br>
+Request Body: None <br>
+Response Example (200 OK):
+
+```JSON
+{
+  "status": "healthy",
+  "version": "0.2.0"
+}
+```
+
+### Create Item
+
+Method  : POST  <br>
+URL : /item <br>
+Request Body:
+* name (string, wajib, max 100 karakter) 
+* price (float, wajib, > 0)
+* description (string, opsional)
+* quantity (integer, opsional, default: 0)
+
+```JSON
+{
+  "name": "Laptop Server",
+  "description": "Laptop khusus untuk komputasi awan",
+  "price": 15000000.0,
+  "quantity": 10
+}
+```
+Response Example (201 OK):
+
+```JSON
+{
+  "name": "Laptop",
+  "description": "Laptop untuk cloud computing",
+  "price": 15000000,
+  "quantity": 10,
+  "id": 0,
+  "created_at": "2026-03-08T03:55:23.101Z",
+  "updated_at": "2026-03-08T03:55:23.101Z"
+}
+```
+
+### List Items
+
+Method  : GET  <br>
+URL : /item <br>
+Request Body: none <br>
+Response Example (200 OK):
+
+```JSON
+{
+  "total": 0,
+  "items": [
+    {
+      "name": "Laptop",
+      "description": "Laptop untuk cloud computing",
+      "price": 15000000,
+      "quantity": 10,
+      "id": 0,
+      "created_at": "2026-03-08T03:55:23.106Z",
+      "updated_at": "2026-03-08T03:55:23.106Z"
+    }
+  ]
+}
+```
+
+### Get Single Item
+
+Method  : GET  <br>
+URL : /items/{item_id} <br>
+Request Body: none <br>
+Response Example (200 OK):
+
+```JSON
+{
+  "name": "Laptop",
+  "description": "Laptop untuk cloud computing",
+  "price": 15000000,
+  "quantity": 10,
+  "id": 0,
+  "created_at": "2026-03-08T03:55:23.109Z",
+  "updated_at": "2026-03-08T03:55:23.109Z"
+}
+```
+
+### Update Item
+
+Method  : PUT  <br>
+URL : /items/{item_id} <br>
+Request Body: 
+```JSON
+{
+  "name": "string",
+  "description": "string",
+  "price": 1,
+  "quantity": 0
+}
+```
+Response Example (200 OK):
+```JSON
+{
+  "name": "Laptop",
+  "description": "Laptop untuk cloud computing",
+  "price": 15000000,
+  "quantity": 10,
+  "id": 0,
+  "created_at": "2026-03-08T04:12:25.455Z",
+  "updated_at": "2026-03-08T04:12:25.455Z"
+}
+```
+
+### Delete Item
+
+Method  : DELETE  <br>
+URL : /items/{item_id} <br>
+Request Body: none <br>
+Response Example (422 eror): Validation Eror
+```JSON
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}
+```
+### Team Information
+
+Method  : GET  <br>
+URL : /team <br>
+Request Body: none <br>
+Response Example (200 OK):
+```JSON
+{
+  "team": "cloud-team-XX",
+  "members": [
+    {
+      "name": "Dzaky Rasyiq Zuhair",
+      "nim": "10231035",
+      "role": "Lead Backend"
+    },
+    {
+      "name": "Dhiya Afifah",
+      "nim": "10231031",
+      "role": "Lead Frontend"
+    },
+    {
+      "name": "Ika Agustin Wulandari",
+      "nim": "10231041",
+      "role": "Lead DevOps"
+    },
+    {
+      "name": "Gabriel Karmen Sanggalangi",
+      "nim": "10231039",
+      "role": "Lead QA & Docs"
+    }
+  ]
+}
+```
 ## Hasil Uji Coba Endpoint
 
 <img src="hasil_pengecekan/Screenshot 2026-02-28 192032.png">
