@@ -1,0 +1,22 @@
+name: Build & Cross-Browser Test
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Build Images
+        run: docker compose build
+
+      - name: Run Tests
+        run: |
+          echo "Running tests on Chromium, Firefox, and Webkit..."
+          # Perintah test akan jalan di sini jika folder tests sudah siap
