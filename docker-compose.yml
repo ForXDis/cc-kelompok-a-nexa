@@ -4,8 +4,9 @@
 # ============================================================
 # Usage:
 #   docker compose up -d          # Start semua services
-#   docker compose down            # Stop & remove
-#   docker compose logs -f         # Lihat logs
+#   docker compose up -d --build  # Paksa build ulang jika ada perubahan kode
+#   docker compose down           # Stop & remove
+#   docker compose logs -f        # Lihat logs
 #   docker compose ps              # Status services
 # ============================================================
 
@@ -13,12 +14,12 @@ services:
   # ==================== DATABASE ====================
   db:
     image: postgres:16-alpine
-    container_name: cloudapp-db
+    container_name: db
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
-      POSTGRES_DB: studyfy
+      POSTGRES_DB: studyfy          # <-- Benar, sesuai dengan nama database
     ports:
       - "5433:5432"
     volumes:
@@ -26,7 +27,7 @@ services:
     networks:
       - cloudnet
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d studyfy"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d studyfy"]  # <-- DIPERBAIKI (sebelumnya cloudapp)
       interval: 10s
       timeout: 5s
       retries: 5
@@ -34,11 +35,14 @@ services:
 
   # ==================== BACKEND ====================
   backend:
-    build: dzaky975/cc-kelompok-a-nexa-backend:1.0
-    container_name: cloudapp-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: cc-kelompok-a-nexa-backend:v.1.0
+    container_name: studyfy-backend
     restart: unless-stopped
     env_file:
-      - ./backend/.env.docker
+      - ./backend/.env.docker       # <-- Mengambil DATABASE_URL dari sini
     ports:
       - "8000:8000"
     networks:
@@ -55,8 +59,13 @@ services:
 
   # ==================== FRONTEND ====================
   frontend:
-    build: dzaky975/cc-kelompok-a-nexa-frontend:1.0
-    container_name: cloudapp-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
+    image: cc-kelompok-a-nexa-frontend:v.1.0
+    container_name: studyfy-frontend
     restart: unless-stopped
     ports:
       - "3000:80"
@@ -68,10 +77,10 @@ services:
 # ==================== VOLUMES ====================
 volumes:
   pgdata:
-    name: cloudapp-pgdata
+    name: studyfy-pgdata
 
 # ==================== NETWORKS ====================
 networks:
   cloudnet:
-    name: cloudapp-network
+    name: studyfy-network
     driver: bridge

@@ -6,6 +6,7 @@ function LoginPage({ onLogin, onRegister }) {
     email: "",
     password: "",
     name: "",
+    role: "murid",
   })
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
@@ -45,10 +46,9 @@ function LoginPage({ onLogin, onRegister }) {
   return (
     <div style={styles.wrapper}>
       <div style={styles.card}>
-        <h1 style={styles.title}>☁️ Cloud App</h1>
-        <p style={styles.subtitle}>Komputasi Awan — SI ITK</p>
+        <h1 style={styles.title}>Studyfy</h1>
+        <p style={styles.subtitle}>Sistem LMS Bimbel</p>
 
-        {/* Tab Switch */}
         <div style={styles.tabs}>
           <button
             style={{ ...styles.tab, ...(isRegister ? {} : styles.tabActive) }}
@@ -64,21 +64,53 @@ function LoginPage({ onLogin, onRegister }) {
           </button>
         </div>
 
-        {error && <div style={styles.error}>{error}</div>}
+        {error && <div style={styles.error}>{typeof error === 'object' ? JSON.stringify(error) : error}</div>}
 
         <form onSubmit={handleSubmit} style={styles.form}>
           {isRegister && (
-            <div style={styles.field}>
-              <label style={styles.label}>Nama Lengkap</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Nama Lengkap"
-                style={styles.input}
-              />
-            </div>
+            <>
+              <div style={styles.field}>
+                <label style={styles.label}>Nama Lengkap</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Nama Lengkap"
+                  style={styles.input}
+                />
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>Daftar sebagai</label>
+                <div style={styles.roleSelector}>
+                  <label style={{ ...styles.roleOption, ...(formData.role === "murid" ? styles.roleOptionActive : {}) }}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="murid"
+                      checked={formData.role === "murid"}
+                      onChange={handleChange}
+                      style={styles.radioInput}
+                    />
+                    <span style={styles.roleIcon}>👨‍🎓</span>
+                    <span>Murid</span>
+                  </label>
+                  <label style={{ ...styles.roleOption, ...(formData.role === "guru" ? styles.roleOptionActive : {}) }}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="guru"
+                      checked={formData.role === "guru"}
+                      onChange={handleChange}
+                      style={styles.radioInput}
+                    />
+                    <span style={styles.roleIcon}>👨‍🏫</span>
+                    <span>Guru</span>
+                  </label>
+                </div>
+              </div>
+            </>
           )}
 
           <div style={styles.field}>
@@ -131,7 +163,7 @@ const styles = {
     padding: "2.5rem",
     borderRadius: "16px",
     width: "100%",
-    maxWidth: "420px",
+    maxWidth: "450px",
     boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
   },
   title: {
@@ -188,6 +220,32 @@ const styles = {
     borderRadius: "8px",
     fontSize: "1rem",
     outline: "none",
+  },
+  roleSelector: {
+    display: "flex",
+    gap: "1rem",
+  },
+  roleOption: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "0.5rem",
+    padding: "1rem",
+    border: "2px solid #ddd",
+    borderRadius: "8px",
+    cursor: "pointer",
+    transition: "all 0.2s",
+  },
+  roleOptionActive: {
+    borderColor: "#1F4E79",
+    backgroundColor: "#e8f4fd",
+  },
+  roleIcon: {
+    fontSize: "2rem",
+  },
+  radioInput: {
+    display: "none",
   },
   btnSubmit: {
     padding: "0.8rem",
