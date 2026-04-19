@@ -157,7 +157,7 @@ def get_kelas(kelas_id: int, db: Session = Depends(get_db), current_user: User =
         "created_at": kelas.created_at.isoformat() if kelas.created_at else None,
         "guru": {
             "id": kelas.guru.id,
-            "nama": kelas.guru.nama,
+            "name": kelas.guru.name,
             "email": kelas.guru.email,
             "role": kelas.guru.role.value if hasattr(kelas.guru.role, 'value') else kelas.guru.role,
         } if kelas.guru else None,

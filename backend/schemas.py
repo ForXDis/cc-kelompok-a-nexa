@@ -132,9 +132,10 @@ class TokenResponse(BaseModel):
 
 class GuruResponse(BaseModel):
     id: int
-    nama: str
+    name: str
     email: str
     role: str
+    is_active: bool
 
     class Config:
         from_attributes = True
@@ -142,7 +143,7 @@ class GuruResponse(BaseModel):
 
 class MuridResponse(BaseModel):
     id: int
-    nama: str
+    name: str
     email: str
     role: str
 
@@ -286,6 +287,7 @@ class PengumpulanResponse(BaseModel):
     feedback_guru: Optional[str]
     created_at: datetime
     updated_at: Optional[datetime]
+    murid: Optional[MuridResponse] = None
 
     class Config:
         from_attributes = True

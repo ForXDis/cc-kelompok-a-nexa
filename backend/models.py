@@ -34,8 +34,8 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
-    nama = Column(String(100), nullable=False)
-    password = Column(String(255), nullable=False)
+    name = Column(String(100), nullable=False)
+    hashed_password = Column(String(255), nullable=False)
     role = Column(SQLEnum(UserRole), nullable=False, default=UserRole.MURID)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

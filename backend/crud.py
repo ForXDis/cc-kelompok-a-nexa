@@ -121,8 +121,8 @@ def create_user(db: Session, user_data: UserRegister) -> User | None:
         return None
     db_user = User(
         email=user_data.email,
-        nama=user_data.name,
-        password=hash_password(user_data.password),
+        name=user_data.name,
+        hashed_password=hash_password(user_data.password),
         role=UserRole(user_data.role or "murid"),
     )
     db.add(db_user)
@@ -168,7 +168,7 @@ def authenticate_user(db: Session, email: str, password: str) -> User | None:
     user = db.query(User).filter(User.email == email).first()
     if not user:
         return None
-    if not verify_password(password, user.password):
+    if not verify_password(password, user.hashed_password):
         return None
     return user
 
@@ -394,13 +394,13 @@ def give_nilai(db: Session, pengumpulan_id: int, nilai_data: PengumpulanNilai):
 def get_pengumpulan_by_tugas(db: Session, tugas_id: int):
     total = db.query(Pengumpulan).filter(Pengumpulan.tugas_id == tugas_id).count()
     pengumpulans = db.query(Pengumpulan).filter(Pengumpulan.tugas_id == tugas_id).all()
-    return {"total": total, "pengumpulans": [serialize_model(p) for p in pengumpulans]}
+    return {"total": total, "pengumpulans": [serialize_model_with_relations(p, ["murid"]) for p in pengumpulans]}
 
 
 def get_pengumpulan_by_murid(db: Session, murid_id: int):
     total = db.query(Pengumpulan).filter(Pengumpulan.murid_id == murid_id).count()
     pengumpulans = db.query(Pengumpulan).filter(Pengumpulan.murid_id == murid_id).all()
-    return {"total": total, "pengumpulans": [serialize_model(p) for p in pengumpulans]}
+    return {"total": total, "pengumpulans": [serialize_model_with_relations(p, ["murid"]) for p in pengumpulans]}
 
 
 def get_pengumpulan_by_id(db: Session, pengumpulan_id: int) -> Pengumpulan | None:

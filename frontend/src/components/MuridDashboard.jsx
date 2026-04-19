@@ -126,6 +126,7 @@ function MuridDashboard({ user, onLogout }) {
   const [selectedTugas, setSelectedTugas] = useState(null)
   const [loading, setLoading] = useState(false)
   const [demoPengumpulan, setDemoPengumpulan] = useState([])
+  const [pengumpulanList, setPengumpulanList] = useState([])
 
   useEffect(() => {
     loadKelas()
@@ -145,6 +146,16 @@ function MuridDashboard({ user, onLogout }) {
       console.error(err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadPengumpulan = async () => {
+    if (isDemoMode()) return
+    try {
+      const data = await fetchMyPengumpulan()
+      setPengumpulanList(data.pengumpulans || [])
+    } catch (err) {
+      console.error("Error loading pengumpulan:", err)
     }
   }
 
@@ -172,6 +183,7 @@ function MuridDashboard({ user, onLogout }) {
   const goToTugasDetail = (tugas) => {
     setSelectedTugas(tugas)
     setCurrentView(VIEWS.TUGAS_DETAIL)
+    loadPengumpulan()
   }
 
   const goBack = () => {
@@ -276,6 +288,7 @@ function MuridDashboard({ user, onLogout }) {
             tugas={selectedTugas}
             demoPengumpulan={demoPengumpulan}
             setDemoPengumpulan={setDemoPengumpulan}
+            realPengumpulan={pengumpulanList}
           />
         )}
       </main>
@@ -780,19 +793,34 @@ function MateriDetailView({ materi, kelas, onSelectTugas, demoPengumpulan }) {
   )
 }
 
-function TugasDetailView({ tugas, demoPengumpulan, setDemoPengumpulan }) {
+function TugasDetailView({ tugas, demoPengumpulan, setDemoPengumpulan, realPengumpulan }) {
   const [jawaban, setJawaban] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submission, setSubmission] = useState(null)
 
   useEffect(() => {
-    // Check if already submitted
-    const existing = demoPengumpulan.find(p => p.tugas_id === tugas.id)
-    if (existing) {
-      setSubmission(existing)
-      setJawaban(existing.jawaban_teks)
+    if (isDemoMode()) {
+      // Check if already submitted (demo mode)
+      const existing = demoPengumpulan.find(p => p.tugas_id === tugas.id)
+      if (existing) {
+        setSubmission(existing)
+        setJawaban(existing.jawaban_teks || "")
+      } else {
+        setSubmission(null)
+        setJawaban("")
+      }
+    } else {
+      // Real mode - check real submissions
+      const existing = realPengumpulan?.find(p => p.tugas_id === tugas.id)
+      if (existing) {
+        setSubmission(existing)
+        setJawaban(existing.jawaban_teks || "")
+      } else {
+        setSubmission(null)
+        setJawaban("")
+      }
     }
-  }, [tugas.id, demoPengumpulan])
+  }, [tugas.id, demoPengumpulan, realPengumpulan])
 
   const handleSubmit = async () => {
     if (!jawaban.trim()) return
