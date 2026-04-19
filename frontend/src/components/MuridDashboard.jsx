@@ -10,6 +10,46 @@ import {
 // Demo Mode
 const isDemoMode = () => localStorage.getItem("demo_mode") === "true"
 
+// Class theme colors and images
+const CLASS_THEMES = {
+  matematika: {
+    gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    color: "#667eea",
+    lightBg: "#EEF2FF",
+    image: "/images/math-illustration.jpg",
+    icon: "+"
+  },
+  inggris: {
+    gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+    color: "#f5576c",
+    lightBg: "#FFF1F2",
+    image: "/images/english-illustration.jpg",
+    icon: "A"
+  },
+  fisika: {
+    gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+    color: "#4facfe",
+    lightBg: "#E0F7FF",
+    image: "/images/physics-illustration.jpg",
+    icon: "F"
+  },
+  default: {
+    gradient: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+    color: "#11998e",
+    lightBg: "#E6FFF5",
+    image: null,
+    icon: "K"
+  }
+}
+
+const getClassTheme = (className) => {
+  const name = className.toLowerCase()
+  if (name.includes("matematika") || name.includes("math")) return CLASS_THEMES.matematika
+  if (name.includes("inggris") || name.includes("english")) return CLASS_THEMES.inggris
+  if (name.includes("fisika") || name.includes("physics")) return CLASS_THEMES.fisika
+  return CLASS_THEMES.default
+}
+
 const DEMO_KELAS = [
   { id: 1, nama_kelas: "Matematika Dasar", deskripsi: "Kelas matematika untuk pemula mencakup aljabar, geometri, dan aritmatika dasar", guru: { name: "Pak Ahmad" }, jumlah_materi: 3, jumlah_murid: 24 },
   { id: 2, nama_kelas: "Bahasa Inggris", deskripsi: "Kelas bahasa Inggris conversation dan grammar untuk pemula", guru: { name: "Bu Sarah" }, jumlah_materi: 2, jumlah_murid: 18 },
@@ -253,48 +293,112 @@ function KelasListView({ enrolledKelas, loading, onSelectKelas }) {
 
   return (
     <div style={styles.viewContainer}>
-      <div style={styles.viewHeader}>
-        <h1 style={styles.viewTitle}>Kelas Saya</h1>
-        <p style={styles.viewSubtitle}>Pilih kelas untuk melihat materi dan tugas</p>
+      {/* Hero Section */}
+      <div style={styles.heroSection}>
+        <div style={styles.heroContent}>
+          <span style={styles.heroGreeting}>Selamat Belajar</span>
+          <h1 style={styles.heroTitle}>Kelas Saya</h1>
+          <p style={styles.heroSubtitle}>
+            Pilih kelas untuk mulai belajar. Klik pada kartu kelas untuk melihat materi dan tugas.
+          </p>
+        </div>
+        <div style={styles.heroStats}>
+          <div style={styles.heroStatItem}>
+            <span style={styles.heroStatNumber}>{enrolledKelas.length}</span>
+            <span style={styles.heroStatLabel}>Kelas Aktif</span>
+          </div>
+          <div style={styles.heroStatItem}>
+            <span style={styles.heroStatNumber}>
+              {enrolledKelas.reduce((acc, k) => acc + (k.jumlah_materi || 3), 0)}
+            </span>
+            <span style={styles.heroStatLabel}>Total Materi</span>
+          </div>
+        </div>
       </div>
 
       {enrolledKelas.length === 0 ? (
         <div style={styles.emptyState}>
-          <div style={styles.emptyIcon}>&#128218;</div>
+          <div style={styles.emptyIconLarge}>
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+          </div>
           <h3 style={styles.emptyTitle}>Belum ada kelas</h3>
-          <p style={styles.emptyText}>Anda belum terdaftar di kelas manapun</p>
+          <p style={styles.emptyText}>Anda belum terdaftar di kelas manapun. Hubungi guru untuk mendaftarkan ke kelas.</p>
         </div>
       ) : (
         <div style={styles.kelasGrid}>
-          {enrolledKelas.map(kelas => (
-            <div 
-              key={kelas.id} 
-              style={styles.kelasCard}
-              onClick={() => onSelectKelas(kelas)}
-            >
-              <div style={styles.kelasCardHeader}>
-                <div style={styles.kelasIcon}>{kelas.nama_kelas.charAt(0)}</div>
-                <div style={styles.kelasInfo}>
+          {enrolledKelas.map((kelas, index) => {
+            const theme = getClassTheme(kelas.nama_kelas)
+            return (
+              <div 
+                key={kelas.id} 
+                style={{
+                  ...styles.kelasCard,
+                  animationDelay: `${index * 0.1}s`
+                }}
+                onClick={() => onSelectKelas(kelas)}
+                className="kelas-card"
+              >
+                {/* Card Image/Gradient Header */}
+                <div style={{
+                  ...styles.kelasCardImage,
+                  background: theme.image ? `url(${theme.image})` : theme.gradient,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}>
+                  <div style={styles.kelasCardOverlay}>
+                    <div style={{
+                      ...styles.kelasIconBadge,
+                      backgroundColor: 'rgba(255,255,255,0.2)',
+                    }}>
+                      {theme.icon}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Content */}
+                <div style={styles.kelasCardBody}>
+                  <div style={styles.kelasCardMeta}>
+                    <span style={{
+                      ...styles.kelasBadge,
+                      backgroundColor: theme.lightBg,
+                      color: theme.color
+                    }}>
+                      {kelas.jumlah_materi || 3} Materi
+                    </span>
+                    <span style={styles.kelasGuruSmall}>{kelas.guru?.name || "Guru"}</span>
+                  </div>
+
                   <h3 style={styles.kelasName}>{kelas.nama_kelas}</h3>
-                  <p style={styles.kelasGuru}>{kelas.guru?.name || "Guru"}</p>
+                  <p style={styles.kelasDesc}>{kelas.deskripsi || "Tidak ada deskripsi"}</p>
+
+                  <div style={styles.kelasCardFooter}>
+                    <div style={styles.kelasMuridCount}>
+                      <div style={styles.muridAvatars}>
+                        {[...Array(Math.min(3, kelas.jumlah_murid || 3))].map((_, i) => (
+                          <div key={i} style={{
+                            ...styles.muridAvatar,
+                            marginLeft: i > 0 ? '-8px' : '0',
+                            zIndex: 3 - i,
+                            backgroundColor: ['#667eea', '#f5576c', '#11998e'][i % 3]
+                          }} />
+                        ))}
+                      </div>
+                      <span style={styles.muridCountText}>{kelas.jumlah_murid || 20} murid</span>
+                    </div>
+                    <button style={{
+                      ...styles.enterClassBtn,
+                      backgroundColor: theme.color
+                    }}>
+                      Masuk
+                    </button>
+                  </div>
                 </div>
               </div>
-              <p style={styles.kelasDesc}>{kelas.deskripsi || "Tidak ada deskripsi"}</p>
-              <div style={styles.kelasStats}>
-                <span style={styles.kelasStat}>
-                  <span style={styles.statIcon}>&#128214;</span> 
-                  {kelas.jumlah_materi || "3"} Materi
-                </span>
-                <span style={styles.kelasStat}>
-                  <span style={styles.statIcon}>&#128100;</span> 
-                  {kelas.jumlah_murid || "20"} Murid
-                </span>
-              </div>
-              <div style={styles.kelasCardFooter}>
-                <span style={styles.enterClass}>Masuk Kelas &#8594;</span>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
@@ -351,30 +455,76 @@ function KelasDetailView({ kelas, onSelectMateri, demoPengumpulan }) {
     )
   }
 
+  const theme = getClassTheme(kelas.nama_kelas)
+  
   return (
     <div style={styles.viewContainer}>
-      {/* Kelas Header */}
-      <div style={styles.kelasDetailHeader}>
-        <div style={styles.kelasDetailIcon}>{kelas.nama_kelas.charAt(0)}</div>
-        <div style={styles.kelasDetailInfo}>
-          <h1 style={styles.kelasDetailTitle}>{kelas.nama_kelas}</h1>
-          <p style={styles.kelasDetailGuru}>Pengajar: {kelas.guru?.name || "Guru"}</p>
-          <p style={styles.kelasDetailDesc}>{kelas.deskripsi}</p>
+      {/* Kelas Header with gradient */}
+      <div style={{
+        ...styles.kelasDetailHeaderNew,
+        background: theme.gradient,
+      }}>
+        {theme.image && (
+          <img 
+            src={theme.image} 
+            alt={kelas.nama_kelas}
+            style={styles.kelasDetailBgImage}
+          />
+        )}
+        <div style={styles.kelasDetailHeaderContent}>
+          <div style={styles.kelasDetailIconNew}>{theme.icon}</div>
+          <div style={styles.kelasDetailInfo}>
+            <h1 style={styles.kelasDetailTitleNew}>{kelas.nama_kelas}</h1>
+            <p style={styles.kelasDetailGuruNew}>Pengajar: {kelas.guru?.name || "Guru"}</p>
+          </div>
+        </div>
+        <p style={styles.kelasDetailDescNew}>{kelas.deskripsi}</p>
+        
+        {/* Quick Stats */}
+        <div style={styles.kelasQuickStats}>
+          <div style={styles.kelasQuickStat}>
+            <span style={styles.kelasQuickStatNumber}>{materis.length}</span>
+            <span style={styles.kelasQuickStatLabel}>Materi</span>
+          </div>
+          <div style={styles.kelasQuickStat}>
+            <span style={styles.kelasQuickStatNumber}>{kelas.jumlah_murid || 20}</span>
+            <span style={styles.kelasQuickStatLabel}>Murid</span>
+          </div>
+          <div style={styles.kelasQuickStat}>
+            <span style={styles.kelasQuickStatNumber}>{stats.percentage}%</span>
+            <span style={styles.kelasQuickStatLabel}>Kehadiran</span>
+          </div>
         </div>
       </div>
 
       {/* Section Tabs */}
-      <div style={styles.sectionTabs}>
+      <div style={styles.sectionTabsNew}>
         <button 
-          style={{...styles.sectionTab, ...(activeSection === "materi" ? styles.sectionTabActive : {})}}
+          style={{
+            ...styles.sectionTabNew, 
+            ...(activeSection === "materi" ? {...styles.sectionTabActiveNew, borderColor: theme.color, color: theme.color} : {})
+          }}
           onClick={() => setActiveSection("materi")}
         >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: '8px'}}>
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+          </svg>
           Materi ({materis.length})
         </button>
         <button 
-          style={{...styles.sectionTab, ...(activeSection === "presensi" ? styles.sectionTabActive : {})}}
+          style={{
+            ...styles.sectionTabNew, 
+            ...(activeSection === "presensi" ? {...styles.sectionTabActiveNew, borderColor: theme.color, color: theme.color} : {})
+          }}
           onClick={() => setActiveSection("presensi")}
         >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: '8px'}}>
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
           Presensi
         </button>
       </div>
@@ -887,6 +1037,67 @@ const styles = {
     margin: 0,
   },
 
+  // Hero Section
+  heroSection: {
+    background: "linear-gradient(135deg, #1F4E79 0%, #2D6A9F 50%, #1F4E79 100%)",
+    borderRadius: "20px",
+    padding: "2.5rem",
+    marginBottom: "2rem",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    color: "white",
+    position: "relative",
+    overflow: "hidden",
+  },
+  heroContent: {
+    maxWidth: "60%",
+    zIndex: 1,
+  },
+  heroGreeting: {
+    fontSize: "0.9rem",
+    opacity: 0.9,
+    marginBottom: "0.5rem",
+    display: "block",
+    textTransform: "uppercase",
+    letterSpacing: "1px",
+  },
+  heroTitle: {
+    fontSize: "2.25rem",
+    fontWeight: "700",
+    margin: "0 0 0.75rem 0",
+    lineHeight: 1.2,
+  },
+  heroSubtitle: {
+    fontSize: "1rem",
+    opacity: 0.9,
+    margin: 0,
+    lineHeight: 1.6,
+  },
+  heroStats: {
+    display: "flex",
+    gap: "2rem",
+    zIndex: 1,
+  },
+  heroStatItem: {
+    textAlign: "center",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    padding: "1.25rem 1.5rem",
+    borderRadius: "12px",
+    backdropFilter: "blur(10px)",
+  },
+  heroStatNumber: {
+    display: "block",
+    fontSize: "2rem",
+    fontWeight: "700",
+  },
+  heroStatLabel: {
+    display: "block",
+    fontSize: "0.85rem",
+    opacity: 0.9,
+    marginTop: "0.25rem",
+  },
+
   // Loading
   loadingContainer: {
     display: "flex",
@@ -914,39 +1125,93 @@ const styles = {
   // Empty State
   emptyState: {
     textAlign: "center",
-    padding: "4rem 2rem",
+    padding: "5rem 2rem",
     backgroundColor: "white",
-    borderRadius: "12px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    borderRadius: "20px",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+  },
+  emptyIconLarge: {
+    marginBottom: "1.5rem",
   },
   emptyIcon: {
     fontSize: "3rem",
     marginBottom: "1rem",
   },
   emptyTitle: {
-    fontSize: "1.25rem",
+    fontSize: "1.35rem",
     color: "#374151",
-    margin: "0 0 0.5rem 0",
+    margin: "0 0 0.75rem 0",
+    fontWeight: "600",
   },
   emptyText: {
     color: "#6B7280",
     margin: 0,
+    maxWidth: "400px",
+    marginInline: "auto",
+    lineHeight: 1.6,
   },
 
   // Kelas Grid
   kelasGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-    gap: "1.5rem",
+    gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+    gap: "1.75rem",
   },
   kelasCard: {
     backgroundColor: "white",
-    borderRadius: "12px",
-    padding: "1.5rem",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    borderRadius: "16px",
+    overflow: "hidden",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
     cursor: "pointer",
-    transition: "all 0.2s",
-    border: "2px solid transparent",
+    transition: "all 0.3s ease",
+    border: "1px solid #E5E7EB",
+    animation: "slideUp 0.5s ease forwards",
+    opacity: 0,
+    transform: "translateY(20px)",
+  },
+  kelasCardImage: {
+    height: "140px",
+    position: "relative",
+  },
+  kelasCardOverlay: {
+    position: "absolute",
+    inset: 0,
+    background: "linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 100%)",
+    display: "flex",
+    alignItems: "flex-end",
+    justifyContent: "flex-end",
+    padding: "1rem",
+  },
+  kelasIconBadge: {
+    width: "48px",
+    height: "48px",
+    borderRadius: "12px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "1.5rem",
+    fontWeight: "700",
+    color: "white",
+    backdropFilter: "blur(10px)",
+  },
+  kelasCardBody: {
+    padding: "1.25rem",
+  },
+  kelasCardMeta: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "0.75rem",
+  },
+  kelasBadge: {
+    padding: "0.35rem 0.75rem",
+    borderRadius: "20px",
+    fontSize: "0.8rem",
+    fontWeight: "600",
+  },
+  kelasGuruSmall: {
+    fontSize: "0.85rem",
+    color: "#6B7280",
   },
   kelasCardHeader: {
     display: "flex",
@@ -970,8 +1235,8 @@ const styles = {
     flex: 1,
   },
   kelasName: {
-    fontSize: "1.1rem",
-    fontWeight: "600",
+    fontSize: "1.15rem",
+    fontWeight: "700",
     color: "#1F2937",
     margin: "0 0 0.25rem 0",
   },
@@ -1004,6 +1269,38 @@ const styles = {
   kelasCardFooter: {
     paddingTop: "1rem",
     borderTop: "1px solid #E5E7EB",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  kelasMuridCount: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+  },
+  muridAvatars: {
+    display: "flex",
+    alignItems: "center",
+  },
+  muridAvatar: {
+    width: "28px",
+    height: "28px",
+    borderRadius: "50%",
+    border: "2px solid white",
+  },
+  muridCountText: {
+    fontSize: "0.85rem",
+    color: "#6B7280",
+  },
+  enterClassBtn: {
+    padding: "0.5rem 1rem",
+    borderRadius: "8px",
+    border: "none",
+    color: "white",
+    fontWeight: "600",
+    fontSize: "0.85rem",
+    cursor: "pointer",
+    transition: "all 0.2s",
   },
   enterClass: {
     color: "#1F4E79",
@@ -1011,7 +1308,90 @@ const styles = {
     fontSize: "0.9rem",
   },
 
-  // Kelas Detail Header
+  // Kelas Detail Header (new gradient style)
+  kelasDetailHeaderNew: {
+    borderRadius: "20px",
+    padding: "2rem",
+    marginBottom: "1.5rem",
+    color: "white",
+    position: "relative",
+    overflow: "hidden",
+  },
+  kelasDetailBgImage: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    width: "40%",
+    height: "100%",
+    objectFit: "cover",
+    opacity: 0.15,
+    maskImage: "linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)",
+    WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%)",
+  },
+  kelasDetailHeaderContent: {
+    display: "flex",
+    alignItems: "center",
+    gap: "1rem",
+    marginBottom: "1rem",
+    position: "relative",
+    zIndex: 1,
+  },
+  kelasDetailIconNew: {
+    width: "64px",
+    height: "64px",
+    borderRadius: "16px",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    backdropFilter: "blur(10px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "1.75rem",
+    fontWeight: "700",
+    flexShrink: 0,
+  },
+  kelasDetailTitleNew: {
+    fontSize: "1.75rem",
+    fontWeight: "700",
+    margin: 0,
+  },
+  kelasDetailGuruNew: {
+    opacity: 0.9,
+    margin: "0.25rem 0 0 0",
+    fontSize: "0.95rem",
+  },
+  kelasDetailDescNew: {
+    opacity: 0.9,
+    margin: "0 0 1.5rem 0",
+    lineHeight: "1.6",
+    maxWidth: "600px",
+    position: "relative",
+    zIndex: 1,
+  },
+  kelasQuickStats: {
+    display: "flex",
+    gap: "1rem",
+    position: "relative",
+    zIndex: 1,
+  },
+  kelasQuickStat: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+    backdropFilter: "blur(10px)",
+    padding: "0.75rem 1.25rem",
+    borderRadius: "10px",
+    textAlign: "center",
+  },
+  kelasQuickStatNumber: {
+    display: "block",
+    fontSize: "1.25rem",
+    fontWeight: "700",
+  },
+  kelasQuickStatLabel: {
+    display: "block",
+    fontSize: "0.8rem",
+    opacity: 0.85,
+  },
+  
+  // Kelas Detail Header (old - keeping for compatibility)
   kelasDetailHeader: {
     display: "flex",
     gap: "1.5rem",
@@ -1054,7 +1434,32 @@ const styles = {
     lineHeight: "1.5",
   },
 
-  // Section Tabs
+  // Section Tabs (new style)
+  sectionTabsNew: {
+    display: "flex",
+    gap: "1rem",
+    marginBottom: "1.5rem",
+  },
+  sectionTabNew: {
+    display: "flex",
+    alignItems: "center",
+    padding: "1rem 1.5rem",
+    border: "2px solid #E5E7EB",
+    backgroundColor: "white",
+    borderRadius: "12px",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    color: "#6B7280",
+    transition: "all 0.2s",
+    fontWeight: "500",
+  },
+  sectionTabActiveNew: {
+    backgroundColor: "white",
+    borderWidth: "2px",
+    fontWeight: "600",
+  },
+  
+  // Section Tabs (old)
   sectionTabs: {
     display: "flex",
     gap: "0.5rem",
@@ -1076,9 +1481,9 @@ const styles = {
   },
   sectionContent: {
     backgroundColor: "white",
-    borderRadius: "12px",
-    padding: "1.5rem",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    borderRadius: "16px",
+    padding: "1.75rem",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
   },
 
   // Materi List
@@ -1090,48 +1495,66 @@ const styles = {
   materiCard: {
     display: "flex",
     alignItems: "center",
-    gap: "1rem",
-    padding: "1.25rem",
-    backgroundColor: "#F9FAFB",
-    borderRadius: "10px",
+    gap: "1.25rem",
+    padding: "1.5rem",
+    backgroundColor: "white",
+    borderRadius: "14px",
     cursor: "pointer",
-    transition: "all 0.2s",
+    transition: "all 0.3s ease",
     border: "1px solid #E5E7EB",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
   },
   materiNumber: {
-    width: "40px",
-    height: "40px",
-    borderRadius: "8px",
-    backgroundColor: "#1F4E79",
+    width: "52px",
+    height: "52px",
+    borderRadius: "12px",
+    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     color: "white",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontWeight: "600",
+    fontWeight: "700",
+    fontSize: "1.1rem",
     flexShrink: 0,
+    boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
   },
   materiContent: {
     flex: 1,
   },
   materiTitle: {
-    fontSize: "1rem",
+    fontSize: "1.1rem",
     fontWeight: "600",
     color: "#1F2937",
-    margin: "0 0 0.35rem 0",
+    margin: "0 0 0.5rem 0",
   },
   materiPreview: {
     color: "#6B7280",
-    fontSize: "0.85rem",
-    margin: "0 0 0.35rem 0",
-    lineHeight: "1.4",
+    fontSize: "0.9rem",
+    margin: "0 0 0.5rem 0",
+    lineHeight: "1.5",
+    display: "-webkit-box",
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
   },
   materiDate: {
     color: "#9CA3AF",
     fontSize: "0.8rem",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.35rem",
   },
   materiArrow: {
-    color: "#9CA3AF",
-    fontSize: "1.25rem",
+    width: "36px",
+    height: "36px",
+    borderRadius: "50%",
+    backgroundColor: "#F3F4F6",
+    color: "#6B7280",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "1.1rem",
+    transition: "all 0.2s",
   },
 
   // Presensi
@@ -1518,12 +1941,26 @@ styleSheet.textContent = `
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
   .kelas-card:hover {
-    border-color: #1F4E79;
-    box-shadow: 0 4px 12px rgba(31, 78, 121, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  }
+  .kelas-card:hover img {
+    transform: scale(1.05);
+  }
+  .kelas-card {
+    animation: slideUp 0.5s ease forwards;
   }
 `
 document.head.appendChild(styleSheet)
