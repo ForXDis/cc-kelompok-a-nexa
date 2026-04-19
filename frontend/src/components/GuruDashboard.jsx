@@ -9,6 +9,32 @@ import {
   fetchMurids,
 } from "../services/api"
 
+// Demo Mode Data
+const isDemoMode = () => localStorage.getItem("demo_mode") === "true"
+
+const DEMO_KELAS = [
+  { id: 1, nama_kelas: "Matematika Dasar", deskripsi: "Kelas matematika untuk pemula", guru_id: 1 },
+  { id: 2, nama_kelas: "Bahasa Inggris", deskripsi: "Kelas bahasa Inggris conversation", guru_id: 1 },
+  { id: 3, nama_kelas: "Fisika SMA", deskripsi: "Fisika untuk persiapan UTBK", guru_id: 1 },
+]
+
+const DEMO_MURIDS = [
+  { id: 2, name: "Ahmad Rizki", email: "ahmad@demo.com" },
+  { id: 3, name: "Siti Nurhaliza", email: "siti@demo.com" },
+  { id: 4, name: "Budi Santoso", email: "budi@demo.com" },
+]
+
+const DEMO_MATERIS = [
+  { id: 1, kelas_id: 1, judul: "Pengenalan Aljabar", konten: "Materi dasar aljabar meliputi variabel, konstanta, dan operasi dasar." },
+  { id: 2, kelas_id: 1, judul: "Persamaan Linear", konten: "Cara menyelesaikan persamaan linear satu variabel." },
+  { id: 3, kelas_id: 2, judul: "Basic Grammar", konten: "Tenses, articles, dan struktur kalimat dasar." },
+]
+
+const DEMO_TUGAS = [
+  { id: 1, kelas_id: 1, judul: "Latihan Aljabar", deskripsi: "Kerjakan 10 soal aljabar", deadline: new Date(Date.now() + 7*24*60*60*1000).toISOString() },
+  { id: 2, kelas_id: 1, judul: "Quiz Persamaan Linear", deskripsi: "Quiz singkat persamaan linear", deadline: new Date(Date.now() + 3*24*60*60*1000).toISOString() },
+]
+
 function GuruDashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState("kelas")
   const [kelasList, setKelasList] = useState([])
@@ -24,6 +50,15 @@ function GuruDashboard({ user, onLogout }) {
   const [showModal, setShowModal] = useState(false)
   const [modalMode, setModalMode] = useState("")
   const [modalData, setModalData] = useState(null)
+
+  // Demo mode state
+  const [demoKelasList, setDemoKelasList] = useState(DEMO_KELAS)
+  const [demoMateris, setDemoMateris] = useState(DEMO_MATERIS)
+  const [demoTugas, setDemoTugas] = useState(DEMO_TUGAS)
+  const [demoEnrolled, setDemoEnrolled] = useState([
+    { id: 1, murid_id: 2, murid: DEMO_MURIDS[0] },
+    { id: 2, murid_id: 3, murid: DEMO_MURIDS[1] },
+  ])
 
   useEffect(() => {
     loadKelas()
@@ -46,6 +81,11 @@ function GuruDashboard({ user, onLogout }) {
 
   const loadKelas = async () => {
     setLoading(true)
+    if (isDemoMode()) {
+      setKelasList(demoKelasList)
+      setLoading(false)
+      return
+    }
     try {
       const data = await fetchKelas()
       setKelasList(data.kelass || [])
@@ -57,6 +97,10 @@ function GuruDashboard({ user, onLogout }) {
   }
 
   const loadMurids = async () => {
+    if (isDemoMode()) {
+      setMuridList(DEMO_MURIDS)
+      return
+    }
     try {
       const data = await fetchMurids()
       setMuridList(data || [])
@@ -66,6 +110,11 @@ function GuruDashboard({ user, onLogout }) {
   }
 
   const loadKelasDetail = async (kelasId) => {
+    if (isDemoMode()) {
+      const kelas = demoKelasList.find(k => k.id === kelasId)
+      setSelectedKelasDetail(kelas)
+      return
+    }
     try {
       const data = await fetchKelasDetail(kelasId)
       setSelectedKelasDetail(data)
@@ -75,6 +124,10 @@ function GuruDashboard({ user, onLogout }) {
   }
 
   const loadEnrolledMurids = async (kelasId) => {
+    if (isDemoMode()) {
+      setEnrolledMurids(demoEnrolled.filter(e => e.kelas_id === kelasId || true))
+      return
+    }
     try {
       const data = await fetchEnrolledMurids(kelasId)
       setEnrolledMurids(data.enrollments || [])
@@ -84,6 +137,10 @@ function GuruDashboard({ user, onLogout }) {
   }
 
   const loadMateris = async (kelasId) => {
+    if (isDemoMode()) {
+      setMateris(demoMateris.filter(m => m.kelas_id === kelasId))
+      return
+    }
     try {
       const data = await fetchMateris(kelasId)
       setMateris(data.materis || [])
@@ -93,6 +150,10 @@ function GuruDashboard({ user, onLogout }) {
   }
 
   const loadTugass = async (kelasId) => {
+    if (isDemoMode()) {
+      setTugass(demoTugas.filter(t => t.kelas_id === kelasId))
+      return
+    }
     try {
       const data = await fetchTugas(kelasId)
       setTugass(data.tugass || [])
@@ -118,6 +179,18 @@ function GuruDashboard({ user, onLogout }) {
   }
 
   const handleSaveKelas = async (formData) => {
+    if (isDemoMode()) {
+      if (modalData) {
+        setDemoKelasList(prev => prev.map(k => k.id === modalData.id ? { ...k, ...formData } : k))
+      } else {
+        const newKelas = { id: Date.now(), ...formData, guru_id: 1 }
+        setDemoKelasList(prev => [...prev, newKelas])
+        setSelectedKelasId(newKelas.id)
+      }
+      setKelasList(isDemoMode() ? demoKelasList : kelasList)
+      closeModal()
+      return
+    }
     try {
       if (modalData) {
         await updateKelas(modalData.id, formData)
@@ -137,6 +210,11 @@ function GuruDashboard({ user, onLogout }) {
 
   const handleDeleteKelas = async (id) => {
     if (!confirm("Yakin hapus kelas ini?")) return
+    if (isDemoMode()) {
+      setDemoKelasList(prev => prev.filter(k => k.id !== id))
+      setSelectedKelasId(null)
+      return
+    }
     try {
       await deleteKelas(id)
       setSelectedKelasId(null)
@@ -147,6 +225,17 @@ function GuruDashboard({ user, onLogout }) {
   }
 
   const handleSaveMateri = async (formData) => {
+    if (isDemoMode()) {
+      if (modalData) {
+        setDemoMateris(prev => prev.map(m => m.id === modalData.id ? { ...m, ...formData } : m))
+      } else {
+        const newMateri = { id: Date.now(), kelas_id: selectedKelasId, ...formData }
+        setDemoMateris(prev => [...prev, newMateri])
+      }
+      loadMateris(selectedKelasId)
+      closeModal()
+      return
+    }
     try {
       if (modalData) {
         await updateMateri(modalData.id, formData)
@@ -161,6 +250,11 @@ function GuruDashboard({ user, onLogout }) {
   }
 
   const handleDeleteMateri = async (id) => {
+    if (isDemoMode()) {
+      setDemoMateris(prev => prev.filter(m => m.id !== id))
+      loadMateris(selectedKelasId)
+      return
+    }
     try {
       await deleteMateri(id)
       loadMateris(selectedKelasId)
@@ -170,6 +264,17 @@ function GuruDashboard({ user, onLogout }) {
   }
 
   const handleSaveTugas = async (formData) => {
+    if (isDemoMode()) {
+      if (modalData) {
+        setDemoTugas(prev => prev.map(t => t.id === modalData.id ? { ...t, ...formData } : t))
+      } else {
+        const newTugas = { id: Date.now(), kelas_id: selectedKelasId, ...formData }
+        setDemoTugas(prev => [...prev, newTugas])
+      }
+      loadTugass(selectedKelasId)
+      closeModal()
+      return
+    }
     try {
       if (modalData) {
         await updateTugas(modalData.id, formData)
@@ -184,6 +289,11 @@ function GuruDashboard({ user, onLogout }) {
   }
 
   const handleDeleteTugas = async (id) => {
+    if (isDemoMode()) {
+      setDemoTugas(prev => prev.filter(t => t.id !== id))
+      loadTugass(selectedKelasId)
+      return
+    }
     try {
       await deleteTugas(id)
       loadTugass(selectedKelasId)

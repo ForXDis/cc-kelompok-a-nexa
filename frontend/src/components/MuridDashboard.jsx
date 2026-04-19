@@ -8,6 +8,34 @@ import {
   fetchMyPresensi, fetchMyPresensiStats,
 } from "../services/api"
 
+// Demo Mode
+const isDemoMode = () => localStorage.getItem("demo_mode") === "true"
+
+const DEMO_KELAS = [
+  { id: 1, nama_kelas: "Matematika Dasar", deskripsi: "Kelas matematika untuk pemula", guru: { name: "Demo Guru" } },
+  { id: 2, nama_kelas: "Bahasa Inggris", deskripsi: "Kelas bahasa Inggris conversation", guru: { name: "Demo Guru" } },
+]
+
+const DEMO_MATERIS = {
+  1: [
+    { id: 1, judul: "Pengenalan Aljabar", konten: "Materi dasar aljabar meliputi variabel, konstanta, dan operasi dasar." },
+    { id: 2, judul: "Persamaan Linear", konten: "Cara menyelesaikan persamaan linear satu variabel." },
+  ],
+  2: [
+    { id: 3, judul: "Basic Grammar", konten: "Tenses, articles, dan struktur kalimat dasar." },
+  ]
+}
+
+const DEMO_TUGAS = {
+  1: [
+    { id: 1, judul: "Latihan Aljabar", deskripsi: "Kerjakan 10 soal aljabar", deadline: new Date(Date.now() + 7*24*60*60*1000).toISOString() },
+    { id: 2, judul: "Quiz Persamaan Linear", deskripsi: "Quiz singkat persamaan linear", deadline: new Date(Date.now() + 3*24*60*60*1000).toISOString() },
+  ],
+  2: [
+    { id: 3, judul: "Essay Writing", deskripsi: "Tulis essay pendek dalam bahasa Inggris", deadline: new Date(Date.now() + 5*24*60*60*1000).toISOString() },
+  ]
+}
+
 function MuridDashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState("kelas")
   const [enrolledKelas, setEnrolledKelas] = useState([])
@@ -16,6 +44,9 @@ function MuridDashboard({ user, onLogout }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [refreshKey, setRefreshKey] = useState(0)
+  
+  // Demo state
+  const [demoPengumpulan, setDemoPengumpulan] = useState([])
 
   useEffect(() => {
     loadKelas()
@@ -30,6 +61,11 @@ function MuridDashboard({ user, onLogout }) {
 
   const loadKelas = async () => {
     setLoading(true)
+    if (isDemoMode()) {
+      setEnrolledKelas(DEMO_KELAS)
+      setLoading(false)
+      return
+    }
     try {
       const data = await fetchKelas()
       setEnrolledKelas(data.kelass || [])
@@ -162,6 +198,10 @@ function MateriTab({ enrolledKelas, selectedKelasId }) {
 
   useEffect(() => {
     if (kelasId) {
+      if (isDemoMode()) {
+        setMateris(DEMO_MATERIS[kelasId] || [])
+        return
+      }
       fetchMateris(kelasId)
         .then(data => setMateris(data.materis || []))
         .catch(err => console.error(err))
@@ -211,9 +251,15 @@ function TugasTab({ enrolledKelas, selectedKelasId }) {
   const [showSubmitModal, setShowSubmitModal] = useState(false)
   const [selectedTugas, setSelectedTugas] = useState(null)
   const [jawaban, setJawaban] = useState("")
+  const [demoPengumpulan, setDemoPengumpulan] = useState([])
 
   useEffect(() => {
     if (kelasId) {
+      if (isDemoMode()) {
+        setTugass(DEMO_TUGAS[kelasId] || [])
+        setMyPengumpulan(demoPengumpulan)
+        return
+      }
       fetchTugas(kelasId)
         .then(data => setTugass(data.tugass || []))
         .catch(err => console.error(err))
@@ -221,10 +267,24 @@ function TugasTab({ enrolledKelas, selectedKelasId }) {
         .then(data => setMyPengumpulan(data.pengumpulans || []))
         .catch(err => console.error(err))
     }
-  }, [kelasId])
+  }, [kelasId, demoPengumpulan])
 
   const handleSubmit = async () => {
     if (!jawaban.trim()) return
+    if (isDemoMode()) {
+      const newPengumpulan = {
+        id: Date.now(),
+        tugas_id: selectedTugas.id,
+        jawaban_teks: jawaban,
+        nilai: null,
+        feedback_guru: null
+      }
+      setDemoPengumpulan(prev => [...prev, newPengumpulan])
+      setMyPengumpulan(prev => [...prev, newPengumpulan])
+      setShowSubmitModal(false)
+      setJawaban("")
+      return
+    }
     try {
       await submitTugas({
         tugas_id: selectedTugas.id,
