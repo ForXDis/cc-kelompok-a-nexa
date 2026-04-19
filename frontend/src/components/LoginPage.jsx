@@ -10,7 +10,6 @@ function LoginPage({ onLogin, onRegister }) {
   })
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -46,31 +45,32 @@ function LoginPage({ onLogin, onRegister }) {
 
   return (
     <div style={styles.wrapper}>
-      {/* Left Section - Learning Activity Background */}
-      <div style={styles.leftSection}>
-        <div style={styles.overlay}></div>
-        <div style={styles.leftContent}>
-          <h2 style={styles.leftTitle}>Studyfy</h2>
-          <p style={styles.leftSubtitle}>Platform Pembelajaran Modern</p>
+      <div style={styles.card}>
+        <h1 style={styles.title}>Studyfy</h1>
+        <p style={styles.subtitle}>Sistem LMS Bimbel</p>
+
+        <div style={styles.tabs}>
+          <button
+            style={{ ...styles.tab, ...(isRegister ? {} : styles.tabActive) }}
+            onClick={() => { setIsRegister(false); setError("") }}
+          >
+            Login
+          </button>
+          <button
+            style={{ ...styles.tab, ...(isRegister ? styles.tabActive : {}) }}
+            onClick={() => { setIsRegister(true); setError("") }}
+          >
+            Register
+          </button>
         </div>
-      </div>
 
-      {/* Right Section - Login Form */}
-      <div style={styles.rightSection}>
-        <div style={styles.formContainer}>
-          <div style={styles.logoSection}>
-            <h1 style={styles.logo}>Studyfy</h1>
-          </div>
+        {error && <div style={styles.error}>{typeof error === 'object' ? JSON.stringify(error) : error}</div>}
 
-          <h2 style={styles.title}>
-            {isRegister ? "Buat Akun" : "Masuk"}
-          </h2>
-
-          {error && <div style={styles.error}>{error}</div>}
-
-          <form onSubmit={handleSubmit} style={styles.form}>
-            {isRegister && (
+        <form onSubmit={handleSubmit} style={styles.form}>
+          {isRegister && (
+            <>
               <div style={styles.field}>
+                <label style={styles.label}>Nama Lengkap</label>
                 <input
                   type="text"
                   name="name"
@@ -80,71 +80,69 @@ function LoginPage({ onLogin, onRegister }) {
                   style={styles.input}
                 />
               </div>
-            )}
 
-            <div style={styles.field}>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email"
-                required
-                style={styles.input}
-              />
-            </div>
+              <div style={styles.field}>
+                <label style={styles.label}>Daftar sebagai</label>
+                <div style={styles.roleSelector}>
+                  <label style={{ ...styles.roleOption, ...(formData.role === "murid" ? styles.roleOptionActive : {}) }}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="murid"
+                      checked={formData.role === "murid"}
+                      onChange={handleChange}
+                      style={styles.radioInput}
+                    />
+                    <span style={styles.roleIcon}>👨‍🎓</span>
+                    <span>Murid</span>
+                  </label>
+                  <label style={{ ...styles.roleOption, ...(formData.role === "guru" ? styles.roleOptionActive : {}) }}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="guru"
+                      checked={formData.role === "guru"}
+                      onChange={handleChange}
+                      style={styles.radioInput}
+                    />
+                    <span style={styles.roleIcon}>👨‍🏫</span>
+                    <span>Guru</span>
+                  </label>
+                </div>
+              </div>
+            </>
+          )}
 
-            <div style={styles.field}>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Kata Sandi"
-                required
-                style={styles.input}
-              />
-            </div>
-
-            <button type="submit" style={styles.btnSubmit} disabled={loading}>
-              {loading ? "..." : isRegister ? "Daftar" : "Masuk"}
-            </button>
-          </form>
-
-          <div style={styles.divider}></div>
-
-          <div style={styles.toggleContainer}>
-            {!isRegister ? (
-              <>
-                <span style={styles.toggleText}>Belum punya akun?</span>
-                <button 
-                  type="button"
-                  onClick={() => { setIsRegister(true); setError("") }}
-                  style={styles.toggleLink}
-                >
-                  Daftar
-                </button>
-              </>
-            ) : (
-              <>
-                <span style={styles.toggleText}>Sudah punya akun?</span>
-                <button 
-                  type="button"
-                  onClick={() => { setIsRegister(false); setError("") }}
-                  style={styles.toggleLink}
-                >
-                  Masuk
-                </button>
-              </>
-            )}
+          <div style={styles.field}>
+            <label style={styles.label}>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="email@student.itk.ac.id"
+              required
+              style={styles.input}
+            />
           </div>
 
-          {!isRegister && (
-            <div style={styles.forgotContainer}>
-              <a href="#forgot" style={styles.forgotLink}>Lupa kata sandi?</a>
-            </div>
-          )}
-        </div>
+          <div style={styles.field}>
+            <label style={styles.label}>Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Minimal 8 karakter"
+              required
+              style={styles.input}
+            />
+          </div>
+
+          <button type="submit" style={styles.btnSubmit} disabled={loading}>
+            {loading ? "⏳ Loading..." : isRegister ? "📝 Register" : "🔐 Login"}
+          </button>
+        </form>
       </div>
     </div>
   )
@@ -154,75 +152,52 @@ const styles = {
   wrapper: {
     minHeight: "100vh",
     display: "flex",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  },
-  leftSection: {
-    flex: 1,
-    backgroundImage: "url(/learning-activity-bg.jpg)",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    position: "relative",
-    display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    minHeight: "100vh",
-  },
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(26, 58, 82, 0.4)",
-  },
-  leftContent: {
-    position: "relative",
-    zIndex: 1,
-    textAlign: "center",
-    color: "white",
-  },
-  leftTitle: {
-    fontSize: "2.8rem",
-    fontWeight: "700",
-    margin: "0 0 0.5rem 0",
-    letterSpacing: "-0.5px",
-  },
-  leftSubtitle: {
-    fontSize: "1.1rem",
-    fontWeight: "300",
-    margin: "0",
-    opacity: 0.95,
-    letterSpacing: "0.3px",
-  },
-  rightSection: {
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fafbfc",
+    backgroundColor: "#1F4E79",
     padding: "2rem",
+    fontFamily: "'Segoe UI', Arial, sans-serif",
   },
-  formContainer: {
+  card: {
+    backgroundColor: "white",
+    padding: "2.5rem",
+    borderRadius: "16px",
     width: "100%",
-    maxWidth: "380px",
-  },
-  logoSection: {
-    textAlign: "center",
-    marginBottom: "2rem",
-  },
-  logo: {
-    fontSize: "1.6rem",
-    fontWeight: "700",
-    color: "#1a3a52",
-    margin: "0",
-    letterSpacing: "-0.5px",
+    maxWidth: "450px",
+    boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
   },
   title: {
-    fontSize: "1.5rem",
-    fontWeight: "700",
-    color: "#1a3a52",
-    margin: "0 0 1.5rem 0",
     textAlign: "center",
+    margin: "0 0 0.25rem 0",
+    color: "#1F4E79",
+    fontSize: "2rem",
+  },
+  subtitle: {
+    textAlign: "center",
+    color: "#888",
+    margin: "0 0 1.5rem 0",
+    fontSize: "0.9rem",
+  },
+  tabs: {
+    display: "flex",
+    marginBottom: "1.5rem",
+    borderRadius: "8px",
+    overflow: "hidden",
+    border: "2px solid #e0e0e0",
+  },
+  tab: {
+    flex: 1,
+    padding: "0.7rem",
+    border: "none",
+    backgroundColor: "#f0f0f0",
+    cursor: "pointer",
+    fontSize: "0.95rem",
+    fontWeight: "bold",
+    color: "#888",
+  },
+  tabActive: {
+    backgroundColor: "#1F4E79",
+    color: "white",
   },
   form: {
     display: "flex",
@@ -232,17 +207,19 @@ const styles = {
   field: {
     display: "flex",
     flexDirection: "column",
+    gap: "0.3rem",
+  },
+  label: {
+    fontSize: "0.85rem",
+    fontWeight: "bold",
+    color: "#555",
   },
   input: {
-    padding: "0.85rem 1rem",
-    border: "1.5px solid #ddd",
-    borderRadius: "10px",
-    fontSize: "0.95rem",
+    padding: "0.75rem 1rem",
+    border: "2px solid #ddd",
+    borderRadius: "8px",
+    fontSize: "1rem",
     outline: "none",
-    fontFamily: "inherit",
-    backgroundColor: "white",
-    transition: "all 0.3s ease",
-    color: "#1a3a52",
   },
   roleSelector: {
     display: "flex",
@@ -271,65 +248,24 @@ const styles = {
     display: "none",
   },
   btnSubmit: {
-    padding: "0.9rem 1rem",
-    backgroundColor: "#1a3a52",
+    padding: "0.8rem",
+    backgroundColor: "#548235",
     color: "white",
     border: "none",
-    borderRadius: "10px",
+    borderRadius: "8px",
     cursor: "pointer",
-    fontSize: "0.95rem",
-    fontWeight: "600",
-    transition: "all 0.3s ease",
+    fontSize: "1rem",
+    fontWeight: "bold",
     marginTop: "0.5rem",
-    letterSpacing: "0.3px",
   },
   error: {
-    backgroundColor: "#fee",
-    color: "#c00",
-    padding: "0.75rem 1rem",
-    borderRadius: "8px",
-    marginBottom: "1.2rem",
+    backgroundColor: "#FBE5D6",
+    color: "#C00000",
+    padding: "0.6rem 1rem",
+    borderRadius: "6px",
+    marginBottom: "0.5rem",
     fontSize: "0.9rem",
     textAlign: "center",
-    border: "1px solid #fcc",
-  },
-  divider: {
-    height: "1px",
-    backgroundColor: "#ddd",
-    margin: "1.8rem 0",
-  },
-  toggleContainer: {
-    textAlign: "center",
-    fontSize: "0.9rem",
-    display: "flex",
-    justifyContent: "center",
-    gap: "0.4rem",
-    flexWrap: "wrap",
-  },
-  toggleText: {
-    color: "#666",
-  },
-  toggleLink: {
-    backgroundColor: "transparent",
-    color: "#1a3a52",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: "600",
-    padding: "0",
-    fontSize: "0.9rem",
-    textDecoration: "none",
-    transition: "color 0.3s ease",
-  },
-  forgotContainer: {
-    textAlign: "center",
-    marginTop: "1.2rem",
-  },
-  forgotLink: {
-    color: "#666",
-    fontSize: "0.85rem",
-    textDecoration: "none",
-    fontWeight: "500",
-    transition: "color 0.3s ease",
   },
 }
 

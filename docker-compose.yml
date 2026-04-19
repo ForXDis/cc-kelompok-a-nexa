@@ -35,8 +35,11 @@ services:
 
   # ==================== BACKEND ====================
   backend:
-    image: dzaky975/cc-kelompok-a-nexa-backend:1.0
-    container_name: cloudapp-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: cc-kelompok-a-nexa-backend:v.1.0
+    container_name: studyfy-backend
     restart: unless-stopped
     env_file:
       - ./backend/.env.docker       # <-- Mengambil DATABASE_URL dari sini
@@ -56,8 +59,13 @@ services:
 
   # ==================== FRONTEND ====================
   frontend:
-    image: dzaky975/cc-kelompok-a-nexa-frontend:1.0
-    container_name: cloudapp-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
+    image: cc-kelompok-a-nexa-frontend:v.1.0
+    container_name: studyfy-frontend
     restart: unless-stopped
     ports:
       - "3000:80"
