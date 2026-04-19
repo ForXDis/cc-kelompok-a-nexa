@@ -45,169 +45,93 @@ function LoginPage({ onLogin, onRegister }) {
 
   return (
     <div style={styles.wrapper}>
-      {/* Left Section */}
-      <div style={styles.leftSection}>
-        <div style={styles.content}>
-          <h1 style={styles.platformTitle}>Studyfy</h1>
-          <p style={styles.platformSubtitle}>Platform Pembelajaran Terpadu</p>
-          
-          <h2 style={styles.welcomeTitle}>Selamat datang di</h2>
-          <h2 style={styles.studyfyTitle}>Studyfy</h2>
-          
-          <p style={styles.description}>
-            Ekosistem pendidikan digital yang dirancang untuk membantu pengajar dan siswa meraih potensi terbaik melalui teknologi.
-          </p>
+      <div style={styles.formCard}>
+        <div style={styles.logoSection}>
+          <h1 style={styles.logo}>Studyfy</h1>
+        </div>
 
-          {/* Features */}
-          <div style={styles.features}>
-            <div style={styles.feature}>
-              <span style={styles.checkmark}>✓</span>
-              <span style={styles.featureText}>Akses materi pembelajaran interaktif kapan saja</span>
+        <h2 style={styles.title}>
+          {isRegister ? "Buat Akun" : "Masuk"}
+        </h2>
+
+        {error && <div style={styles.error}>{error}</div>}
+
+        <form onSubmit={handleSubmit} style={styles.form}>
+          {isRegister && (
+            <div style={styles.field}>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Nama Lengkap"
+                style={styles.input}
+              />
             </div>
-            <div style={styles.feature}>
-              <span style={styles.checkmark}>✓</span>
-              <span style={styles.featureText}>Pantau progres tugas dan nilai secara real-time</span>
-            </div>
-            <div style={styles.feature}>
-              <span style={styles.checkmark}>✓</span>
-              <span style={styles.featureText}>Kolaborasi mudah antar siswa dan pengajar</span>
-            </div>
+          )}
+
+          <div style={styles.field}>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email"
+              required
+              style={styles.input}
+            />
           </div>
 
-          <p style={styles.footerText}>Bergabung dengan 10,000+ siswa lainnya hari ini.</p>
-        </div>
-      </div>
+          <div style={styles.field}>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Kata Sandi"
+              required
+              style={styles.input}
+            />
+          </div>
 
-      {/* Right Section - Login Form */}
-      <div style={styles.rightSection}>
-        <div style={styles.formContainer}>
-          {!isRegister && (
-            <>
-              <h3 style={styles.formTitle}>Masuk</h3>
-              <p style={styles.formSubtitle}>
-                Silakan masukkan email dan kata sandi Anda untuk mengakses dashboard pembelajaran.
-              </p>
-            </>
-          )}
-          
-          {isRegister && (
-            <>
-              <h3 style={styles.formTitle}>Daftar Akun Baru</h3>
-              <p style={styles.formSubtitle}>
-                Buat akun Anda untuk memulai perjalanan pembelajaran.
-              </p>
-            </>
-          )}
+          <button type="submit" style={styles.btnSubmit} disabled={loading}>
+            {loading ? "..." : isRegister ? "Daftar" : "Masuk"}
+          </button>
+        </form>
 
-          {error && <div style={styles.error}>{error}</div>}
+        <div style={styles.divider}></div>
 
-          <form onSubmit={handleSubmit} style={styles.form}>
-            {isRegister && (
-              <div style={styles.field}>
-                <label style={styles.label}>Nama Lengkap</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Nama Lengkap"
-                  style={styles.input}
-                />
-              </div>
-            )}
-
-            <div style={styles.field}>
-              <label style={styles.label}>Email / Nama Pengguna</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="nama@sekolah.edu"
-                required
-                style={styles.input}
-              />
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Kata Sandi</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Minimal 8 karakter"
-                required
-                style={styles.input}
-              />
-            </div>
-
-            {!isRegister && (
-              <div style={styles.checkboxContainer}>
-                <input
-                  type="checkbox"
-                  id="remember"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  style={styles.checkbox}
-                />
-                <label htmlFor="remember" style={styles.checkboxLabel}>
-                  Ingat saya di perangkat ini
-                </label>
-              </div>
-            )}
-
-            <button type="submit" style={styles.btnSubmit} disabled={loading}>
-              {loading ? "Memproses..." : isRegister ? "Daftar" : "Masuk Ke Portal →"}
-            </button>
-          </form>
-
+        <div style={styles.toggleContainer}>
           {!isRegister ? (
             <>
-              <div style={styles.linkContainer}>
-                <a href="#forgot" style={styles.link}>Lupa kata sandi?</a>
-              </div>
-              <div style={styles.signupContainer}>
-                <span style={styles.signupText}>Belum memiliki akun? </span>
-                <button 
-                  type="button"
-                  onClick={() => { setIsRegister(true); setError("") }}
-                  style={styles.signupLink}
-                >
-                  Daftar Sekarang
-                </button>
-              </div>
+              <span style={styles.toggleText}>Belum punya akun?</span>
+              <button 
+                type="button"
+                onClick={() => { setIsRegister(true); setError("") }}
+                style={styles.toggleLink}
+              >
+                Daftar
+              </button>
             </>
           ) : (
-            <div style={styles.signupContainer}>
-              <span style={styles.signupText}>Sudah memiliki akun? </span>
+            <>
+              <span style={styles.toggleText}>Sudah punya akun?</span>
               <button 
                 type="button"
                 onClick={() => { setIsRegister(false); setError("") }}
-                style={styles.signupLink}
+                style={styles.toggleLink}
               >
-                Masuk Sekarang
+                Masuk
               </button>
-            </div>
+            </>
           )}
-
-          <div style={styles.helpContainer}>
-            <a href="#help" style={styles.helpLink}>Butuh bantuan? Pusat Bantuan</a>
-          </div>
         </div>
 
-        {/* Footer */}
-        <div style={styles.footer}>
-          <div style={styles.footerLinks}>
-            <a href="#terms" style={styles.footerLink}>Syarat & Ketentuan</a>
-            <span style={styles.separator}>•</span>
-            <a href="#privacy" style={styles.footerLink}>Kebijakan Privasi</a>
-            <span style={styles.separator}>•</span>
-            <a href="#help" style={styles.footerLink}>Pusat Bantuan</a>
+        {!isRegister && (
+          <div style={styles.forgotContainer}>
+            <a href="#forgot" style={styles.forgotLink}>Lupa kata sandi?</a>
           </div>
-          <p style={styles.copyright}>2026 NamaLMS Education Group. Seluruh hak cipta dilindungi.</p>
-          <p style={styles.version}>v2.4.0-stable</p>
-        </div>
+        )}
       </div>
     </div>
   )
@@ -217,232 +141,123 @@ const styles = {
   wrapper: {
     minHeight: "100vh",
     display: "flex",
-    backgroundColor: "#f8f9fa",
-    fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif",
-  },
-  leftSection: {
-    flex: 1,
-    backgroundColor: "#1a3a52",
-    color: "white",
-    padding: "3rem 2rem",
-    display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    minHeight: "100vh",
+    backgroundImage: "url(/login-bg.jpg)",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundAttachment: "fixed",
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    padding: "1rem",
   },
-  content: {
-    maxWidth: "450px",
-  },
-  platformTitle: {
-    fontSize: "0.85rem",
-    fontWeight: "600",
-    letterSpacing: "0.05em",
-    color: "#a0c4e8",
-    margin: "0 0 0.5rem 0",
-    textTransform: "uppercase",
-  },
-  platformSubtitle: {
-    fontSize: "0.9rem",
-    color: "#7fa8c9",
-    margin: "0 0 2rem 0",
-    fontWeight: "500",
-  },
-  welcomeTitle: {
-    fontSize: "1.3rem",
-    fontWeight: "400",
-    color: "#a0c4e8",
-    margin: "0 0 0.5rem 0",
-  },
-  studyfyTitle: {
-    fontSize: "2.5rem",
-    fontWeight: "700",
-    color: "white",
-    margin: "0 0 1.5rem 0",
-  },
-  description: {
-    fontSize: "0.95rem",
-    lineHeight: "1.6",
-    color: "#b8d1e6",
-    margin: "0 0 2rem 0",
-  },
-  features: {
-    marginBottom: "2rem",
-  },
-  feature: {
-    display: "flex",
-    alignItems: "flex-start",
-    marginBottom: "1rem",
-    gap: "0.75rem",
-  },
-  checkmark: {
-    color: "#4caf50",
-    fontSize: "1.2rem",
-    fontWeight: "bold",
-    flexShrink: 0,
-    marginTop: "0.1rem",
-  },
-  featureText: {
-    fontSize: "0.9rem",
-    color: "#b8d1e6",
-    lineHeight: "1.4",
-  },
-  footerText: {
-    fontSize: "0.9rem",
-    color: "#a0c4e8",
-    fontWeight: "500",
-  },
-  rightSection: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    padding: "2rem",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  formContainer: {
+  formCard: {
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    backdropFilter: "blur(10px)",
+    borderRadius: "16px",
+    padding: "3rem 2.5rem",
     width: "100%",
-    maxWidth: "380px",
+    maxWidth: "420px",
+    boxShadow: "0 20px 60px rgba(0, 0, 0, 0.15)",
+    border: "1px solid rgba(255, 255, 255, 0.5)",
   },
-  formTitle: {
+  logoSection: {
+    textAlign: "center",
+    marginBottom: "2.5rem",
+  },
+  logo: {
     fontSize: "1.8rem",
     fontWeight: "700",
     color: "#1a3a52",
-    margin: "0 0 0.5rem 0",
+    margin: "0",
+    letterSpacing: "-0.5px",
   },
-  formSubtitle: {
-    fontSize: "0.9rem",
-    color: "#666",
-    margin: "0 0 1.5rem 0",
-    lineHeight: "1.5",
+  title: {
+    fontSize: "1.6rem",
+    fontWeight: "700",
+    color: "#1a3a52",
+    margin: "0 0 1.8rem 0",
+    textAlign: "center",
   },
   form: {
     display: "flex",
     flexDirection: "column",
-    gap: "1.2rem",
+    gap: "1rem",
   },
   field: {
     display: "flex",
     flexDirection: "column",
-    gap: "0.4rem",
-  },
-  label: {
-    fontSize: "0.85rem",
-    fontWeight: "600",
-    color: "#333",
   },
   input: {
-    padding: "0.75rem 1rem",
-    border: "2px solid #ddd",
-    borderRadius: "8px",
+    padding: "0.85rem 1rem",
+    border: "1.5px solid #ddd",
+    borderRadius: "10px",
     fontSize: "0.95rem",
     outline: "none",
     fontFamily: "inherit",
-    transition: "border-color 0.3s, box-shadow 0.3s",
-  },
-  checkboxContainer: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-  },
-  checkbox: {
-    width: "18px",
-    height: "18px",
-    cursor: "pointer",
-    accentColor: "#1a3a52",
-  },
-  checkboxLabel: {
-    fontSize: "0.9rem",
-    color: "#555",
-    cursor: "pointer",
+    backgroundColor: "#fafbfc",
+    transition: "all 0.3s ease",
+    color: "#1a3a52",
   },
   btnSubmit: {
     padding: "0.9rem 1rem",
     backgroundColor: "#1a3a52",
     color: "white",
     border: "none",
-    borderRadius: "8px",
+    borderRadius: "10px",
     cursor: "pointer",
     fontSize: "0.95rem",
     fontWeight: "600",
-    transition: "background-color 0.3s, transform 0.2s",
+    transition: "all 0.3s ease",
     marginTop: "0.5rem",
-  },
-  linkContainer: {
-    textAlign: "center",
-    marginTop: "0.5rem",
-  },
-  link: {
-    color: "#1a3a52",
-    fontSize: "0.85rem",
-    textDecoration: "none",
-    fontWeight: "500",
-  },
-  signupContainer: {
-    textAlign: "center",
-    marginTop: "1.2rem",
-    fontSize: "0.9rem",
-  },
-  signupText: {
-    color: "#666",
-  },
-  signupLink: {
-    backgroundColor: "transparent",
-    color: "#1a3a52",
-    border: "none",
-    cursor: "pointer",
-    textDecoration: "none",
-    fontWeight: "600",
-    padding: "0",
-    fontSize: "0.9rem",
-  },
-  helpContainer: {
-    textAlign: "center",
-    marginTop: "1.5rem",
-  },
-  helpLink: {
-    color: "#666",
-    fontSize: "0.85rem",
-    textDecoration: "none",
-    fontWeight: "500",
+    letterSpacing: "0.3px",
   },
   error: {
     backgroundColor: "#fee",
     color: "#c00",
     padding: "0.75rem 1rem",
-    borderRadius: "6px",
-    marginBottom: "1rem",
+    borderRadius: "8px",
+    marginBottom: "1.2rem",
     fontSize: "0.9rem",
     textAlign: "center",
     border: "1px solid #fcc",
   },
-  footer: {
+  divider: {
+    height: "1px",
+    backgroundColor: "#ddd",
+    margin: "1.8rem 0",
+  },
+  toggleContainer: {
     textAlign: "center",
-    marginTop: "auto",
-    paddingTop: "2rem",
-    fontSize: "0.8rem",
-    color: "#999",
+    fontSize: "0.9rem",
+    display: "flex",
+    justifyContent: "center",
+    gap: "0.4rem",
+    flexWrap: "wrap",
   },
-  footerLinks: {
-    marginBottom: "0.5rem",
+  toggleText: {
+    color: "#666",
   },
-  footerLink: {
-    color: "#999",
+  toggleLink: {
+    backgroundColor: "transparent",
+    color: "#1a3a52",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: "600",
+    padding: "0",
+    fontSize: "0.9rem",
     textDecoration: "none",
-    fontSize: "0.8rem",
+    transition: "color 0.3s ease",
   },
-  separator: {
-    margin: "0 0.5rem",
-    color: "#ddd",
+  forgotContainer: {
+    textAlign: "center",
+    marginTop: "1.2rem",
   },
-  copyright: {
-    fontSize: "0.8rem",
-    color: "#999",
-    margin: "0.3rem 0",
-  },
-  version: {
-    fontSize: "0.75rem",
-    color: "#bbb",
-    margin: "0.2rem 0 0 0",
+  forgotLink: {
+    color: "#666",
+    fontSize: "0.85rem",
+    textDecoration: "none",
+    fontWeight: "500",
+    transition: "color 0.3s ease",
   },
 }
 
