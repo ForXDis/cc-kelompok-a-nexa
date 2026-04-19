@@ -51,35 +51,19 @@ function App() {
   }, [])
 
   const handleLogin = async (data) => {
-    if (!backendAvailable && DEMO_MODE) {
-      // Demo login - pilih role
-      setShowDemoSelector(true)
-      return
-    }
     const res = await login(data)
     setUser(res.user)
     setIsAuthenticated(true)
   }
 
-  const handleDemoLogin = (role) => {
-    const demoUser = DEMO_USERS[role]
-    setUser(demoUser)
-    setIsAuthenticated(true)
-    setShowDemoSelector(false)
-    // Simpan ke localStorage untuk persist
-    localStorage.setItem("user", JSON.stringify(demoUser))
-    localStorage.setItem("token", "demo-token")
-    localStorage.setItem("demo_mode", "true")
-  }
-
   const handleRegister = async (userData) => {
-    if (!backendAvailable && DEMO_MODE) {
-      // Demo register - langsung login sebagai role yang dipilih
-      handleDemoLogin(userData.role || "murid")
-      return
+    // Register lalu otomatis login
+    try {
+      await register(userData)
+      await handleLogin({ email: userData.email, password: userData.password })
+    } catch (err) {
+      throw err
     }
-    await register(userData)
-    await handleLogin({ email: userData.email, password: userData.password })
   }
 
   const handleLogout = () => {
