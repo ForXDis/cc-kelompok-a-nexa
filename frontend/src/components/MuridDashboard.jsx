@@ -223,7 +223,11 @@ function MuridDashboard({ user, onLogout }) {
       {currentView !== VIEWS.KELAS_LIST && (
         <div style={styles.breadcrumbContainer}>
           <button onClick={goBack} style={styles.backButton}>
-            <span style={styles.backIcon}>&#8592;</span> Kembali
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: "6px"}}>
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Kembali
           </button>
           <div style={styles.breadcrumb}>
             {getBreadcrumb().map((crumb, index) => (
@@ -534,7 +538,14 @@ function KelasDetailView({ kelas, onSelectMateri, demoPengumpulan }) {
         <div style={styles.sectionContent}>
           {materis.length === 0 ? (
             <div style={styles.emptyState}>
-              <div style={styles.emptyIcon}>&#128203;</div>
+              <div style={styles.emptyIcon}>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </div>
               <h3 style={styles.emptyTitle}>Belum ada materi</h3>
               <p style={styles.emptyText}>Guru belum menambahkan materi untuk kelas ini</p>
             </div>
@@ -556,7 +567,11 @@ function KelasDetailView({ kelas, onSelectMateri, demoPengumpulan }) {
                       {materi.created_at ? new Date(materi.created_at).toLocaleDateString('id-ID') : ""}
                     </span>
                   </div>
-                  <div style={styles.materiArrow}>&#8594;</div>
+                  <div style={styles.materiArrow}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </div>
                 </div>
               ))}
             </div>
@@ -688,7 +703,11 @@ function MateriDetailView({ materi, kelas, onSelectTugas, demoPengumpulan }) {
           <div style={styles.loadingSmall}>Memuat tugas...</div>
         ) : tugasList.length === 0 ? (
           <div style={styles.noTugas}>
-            <span style={styles.noTugasIcon}>&#10003;</span>
+            <span style={styles.noTugasIcon}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </span>
             <p>Tidak ada tugas untuk materi ini</p>
           </div>
         ) : (
@@ -713,20 +732,44 @@ function MateriDetailView({ materi, kelas, onSelectTugas, demoPengumpulan }) {
                       ...styles.tugasStatus,
                       backgroundColor: submitted ? "#E6F7E6" : isLate ? "#FFEBEE" : "#EBF5FF"
                     }}>
-                      {submitted ? "&#10003;" : isLate ? "!" : "&#9998;"}
+                      {submitted ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="3">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      ) : isLate ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="8" x2="12" y2="12"/>
+                          <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      )}
                     </div>
                   </div>
                   <div style={styles.tugasCardContent}>
                     <h4 style={styles.tugasTitle}>{tugas.judul}</h4>
                     <p style={styles.tugasDesc}>{tugas.deskripsi}</p>
                     <div style={styles.tugasDeadline}>
-                      <span style={styles.deadlineIcon}>&#128197;</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: "6px", verticalAlign: "middle"}}>
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                      </svg>
                       Deadline: {deadline.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                       {isLate && !submitted && <span style={styles.lateTag}> TERLAMBAT</span>}
                       {submitted && <span style={styles.submittedTag}> SUDAH DIKUMPULKAN</span>}
                     </div>
                   </div>
-                  <div style={styles.tugasArrow}>&#8594;</div>
+                  <div style={styles.tugasArrow}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </div>
                 </div>
               )
             })}
@@ -873,7 +916,12 @@ function TugasDetailView({ tugas, demoPengumpulan, setDemoPengumpulan }) {
               </div>
             ) : (
               <div style={styles.pendingGrade}>
-                <span style={styles.pendingIcon}>&#9203;</span>
+                <span style={styles.pendingIcon}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </span>
                 <p>Menunggu penilaian dari guru</p>
               </div>
             )}
@@ -883,7 +931,13 @@ function TugasDetailView({ tugas, demoPengumpulan, setDemoPengumpulan }) {
         {/* Late Notice */}
         {isLate && !submission && (
           <div style={styles.lateNotice}>
-            <span style={styles.lateNoticeIcon}>&#9888;</span>
+            <span style={styles.lateNoticeIcon}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </span>
             <p>Batas waktu pengumpulan telah lewat. Anda tidak dapat mengumpulkan tugas ini.</p>
           </div>
         )}
