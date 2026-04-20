@@ -1068,17 +1068,17 @@ function GuruDashboard({ user, onLogout }) {
             presensiList.forEach(p => {
               const dateKey = p.tanggal
               if (!grouped[dateKey]) grouped[dateKey] = { hadir: [], izin: [], absen: [] }
-              const enrolled = enrolledMurids.find(e => e.murid_id === p.murid_id)
-              const muridName = p.murid?.name || enrolled?.murid?.name || "Murid " + p.murid_id
-              const student = { id: p.id, name: muridName }
-              if (p.status === "hadir") grouped[dateKey].hadir.push(student)
-              else if (p.status === "izin") grouped[dateKey].izin.push(student)
-              else grouped[dateKey].absen.push(student)
+              const murName = p.murid?.name || ("Murid " + p.murid_id)
+              const entry = { id: p.id, name: murName }
+              if (p.status === "hadir") grouped[dateKey].hadir.push(entry)
+              else if (p.status === "izin") grouped[dateKey].izin.push(entry)
+              else grouped[dateKey].absen.push(entry)
             })
-            const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a))
-            return sortedDates.map(date => {
+            const dates = Object.keys(grouped).sort((a,b)=> new Date(b)- new Date(a))
+            return dates.map(date => {
               const total = grouped[date].hadir.length + grouped[date].izin.length + grouped[date].absen.length
-              const formattedDate = new Date(date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+              const d = new Date(date)
+              const formattedDate = d.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
               return (
                 <div key={date} style={styles.presensiCardNew}>
                   <div style={styles.presensiCardHeaderNew}>
@@ -1091,48 +1091,54 @@ function GuruDashboard({ user, onLogout }) {
                     </div>
                   </div>
                   <div style={styles.presensiCardBodyNew}>
-                    <div style={styles.presensiStatusRowNew}>
-                      <div style={styles.presensiStatusRowIconNew}>
-                        <span style={styles.presensiStatusIconCircleSuccess}>✓</span>
+                    {grouped[date].hadir.length > 0 && (
+                      <div style={{...styles.presensiStatusRowNew, backgroundColor: "#ECFDF5"}}>
+                        <div style={styles.presensiStatusRowIconNew}>
+                          <span style={{...styles.presensiStatusIconCircleSuccess, display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"50%", width:"28px", height:"28px", backgroundColor:"#10B981", color:"white", fontWeight:"bold"}}>✓</span>
+                        </div>
+                        <div style={styles.presensiStatusRowContent}>
+                          <span style={{...styles.presensiStatusRowLabelNew, color:"#065F46"}}>Hadir</span>
+                          <span style={{...styles.presensiStatusRowCountNew, color:"#10B981", fontWeight:"bold", marginLeft:"8px"}}>{grouped[date].hadir.length}</span>
+                        </div>
+                        <div style={{display:"flex", flexWrap:"wrap", gap:"6px", marginLeft:"auto"}}>
+                          {grouped[date].hadir.map(s => (
+                            <span key={s.id} style={{padding:"4px 10px", backgroundColor:"white", color:"#065F46", borderRadius:"12px", fontSize:"13px", border:"1px solid #A7F3D0"}}>{s.name}</span>
+                          ))}
+                        </div>
                       </div>
-                      <div style={styles.presensiStatusRowContent}>
-                        <span style={styles.presensiStatusRowLabelNew}>Hadir</span>
-                        <span style={styles.presensiStatusRowCountNew}>{grouped[date].hadir.length}</span>
+                    )}
+                    {grouped[date].izin.length > 0 && (
+                      <div style={{...styles.presensiStatusRowNew, backgroundColor: "#FFFBEB"}}>
+                        <div style={styles.presensiStatusRowIconNew}>
+                          <span style={{display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"50%", width:"28px", height:"28px", backgroundColor:"#F59E0B", color:"white", fontWeight:"bold"}}>!</span>
+                        </div>
+                        <div style={styles.presensiStatusRowContent}>
+                          <span style={{...styles.presensiStatusRowLabelNew, color:"#92400E"}}>Izin</span>
+                          <span style={{...styles.presensiStatusRowCountWarning, color:"#F59E0B", fontWeight:"bold", marginLeft:"8px"}}>{grouped[date].izin.length}</span>
+                        </div>
+                        <div style={{display:"flex", flexWrap:"wrap", gap:"6px", marginLeft:"auto"}}>
+                          {grouped[date].izin.map(s => (
+                            <span key={s.id} style={{padding:"4px 10px", backgroundColor:"white", color:"#92400E", borderRadius:"12px", fontSize:"13px", border:"1px solid #FDE68A"}}>{s.name}</span>
+                          ))}
+                        </div>
                       </div>
-                      <div style={styles.presensiStatusRowNames}>
-                        {grouped[date].hadir.length > 0 ? grouped[date].hadir.map(s => (
-                          <span key={s.id} style={styles.presensiNameTagSuccess}>{s.name}</span>
-                        )) : <span style={styles.presensiNoDataNew}>Tidak ada</span>}
+                    )}
+                    {grouped[date].absen.length > 0 && (
+                      <div style={{...styles.presensiStatusRowNew, backgroundColor: "#FEF2F2"}}>
+                        <div style={styles.presensiStatusRowIconNew}>
+                          <span style={{display:"flex", alignItems:"center", justifyContent:"center", borderRadius:"50%", width:"28px", height:"28px", backgroundColor:"#EF4444", color:"white", fontWeight:"bold"}}>✕</span>
+                        </div>
+                        <div style={styles.presensiStatusRowContent}>
+                          <span style={{...styles.presensiStatusRowLabelNew, color:"#991B1B"}}>Absen</span>
+                          <span style={{...styles.presensiStatusRowCountDanger, color:"#EF4444", fontWeight:"bold", marginLeft:"8px"}}>{grouped[date].absen.length}</span>
+                        </div>
+                        <div style={{display:"flex", flexWrap:"wrap", gap:"6px", marginLeft:"auto"}}>
+                          {grouped[date].absen.map(s => (
+                            <span key={s.id} style={{padding:"4px 10px", backgroundColor:"white", color:"#991B1B", borderRadius:"12px", fontSize:"13px", border:"1px solid #FECACA"}}>{s.name}</span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    <div style={styles.presensiStatusRowNew}>
-                      <div style={styles.presensiStatusRowIconNew}>
-                        <span style={styles.presensiStatusIconCircleWarning}>!</span>
-                      </div>
-                      <div style={styles.presensiStatusRowContent}>
-                        <span style={styles.presensiStatusRowLabelNew}>Izin</span>
-                        <span style={styles.presensiStatusRowCountWarning}>{grouped[date].izin.length}</span>
-                      </div>
-                      <div style={styles.presensiStatusRowNames}>
-                        {grouped[date].izin.length > 0 ? grouped[date].izin.map(s => (
-                          <span key={s.id} style={styles.presensiNameTagWarning}>{s.name}</span>
-                        )) : <span style={styles.presensiNoDataNew}>Tidak ada</span>}
-                      </div>
-                    </div>
-                    <div style={styles.presensiStatusRowNew}>
-                      <div style={styles.presensiStatusRowIconNew}>
-                        <span style={styles.presensiStatusIconCircleDanger}>✕</span>
-                      </div>
-                      <div style={styles.presensiStatusRowContent}>
-                        <span style={styles.presensiStatusRowLabelNew}>Absen</span>
-                        <span style={styles.presensiStatusRowCountDanger}>{grouped[date].absen.length}</span>
-                      </div>
-                      <div style={styles.presensiStatusRowNames}>
-                        {grouped[date].absen.length > 0 ? grouped[date].absen.map(s => (
-                          <span key={s.id} style={styles.presensiNameTagDanger}>{s.name}</span>
-                        )) : <span style={styles.presensiNoDataNew}>Tidak ada</span>}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               )
@@ -2804,9 +2810,10 @@ styleSheet.textContent = `
     overflow: "hidden",
     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
     border: "1px solid #E5E7EB",
+    marginBottom: "20px",
   },
   presensiCardHeaderNew: {
-    background: "linear-gradient(135deg, #667EEA 0%, #764BA2 100%)",
+    backgroundColor: "#667EEA",
     padding: "16px 20px",
     display: "flex",
     justifyContent: "space-between",
@@ -2840,10 +2847,11 @@ styleSheet.textContent = `
   },
   presensiStatusRowNew: {
     display: "flex",
-    alignItems: "flex-start",
+    alignItems: "center",
     padding: "14px 20px",
-    borderBottom: "1px solid #F3F4F6",
-    gap: "14px",
+    borderBottom: "1px solid #E5E7EB",
+    gap: "12px",
+    backgroundColor: "#FFFFFF",
   },
   presensiStatusRowIconNew: {
     width: "36px",
