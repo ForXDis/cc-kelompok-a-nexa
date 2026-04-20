@@ -13,8 +13,8 @@ class UserRole(str, enum.Enum):
 class PresensiStatus(str, enum.Enum):
     HADIR = "hadir"
     IZIN = "izin"
-    SAKIT = "sakit"
     ALFA = "alfa"
+    SAKIT = "sakit"
 
 
 class Item(Base):

@@ -412,7 +412,10 @@ def create_presensi(db: Session, presensi_data: PresensiCreate):
         and_(Presensi.kelas_id == presensi_data.kelas_id, Presensi.murid_id == presensi_data.murid_id, Presensi.tanggal == presensi_data.tanggal)
     ).first()
     if existing:
-        return None
+        existing.status = PresensiStatus(presensi_data.status)
+        db.commit()
+        db.refresh(existing)
+        return serialize_model(existing)
     db_presensi = Presensi(
         kelas_id=presensi_data.kelas_id,
         murid_id=presensi_data.murid_id,
@@ -448,9 +451,18 @@ def create_presensi_bulk(db: Session, presensis_data: list[PresensiCreate]) -> l
 
 
 def get_presensis_by_kelas(db: Session, kelas_id: int):
+    from sqlalchemy.orm import joinedload
     total = db.query(Presensi).filter(Presensi.kelas_id == kelas_id).count()
-    presensis = db.query(Presensi).filter(Presensi.kelas_id == kelas_id).order_by(Presensi.tanggal.desc()).all()
-    return {"total": total, "presensis": [serialize_model(p) for p in presensis]}
+    presensis = db.query(Presensi).options(joinedload(Presensi.murid)).filter(Presensi.kelas_id == kelas_id).order_by(Presensi.tanggal.desc()).all()
+    result = []
+    for p in presensis:
+        data = serialize_model(p)
+        if p.murid:
+            data["murid"] = {"id": p.murid.id, "name": p.murid.name}
+        else:
+            data["murid"] = {"id": p.murid_id, "name": "Unknown"}
+        result.append(data)
+    return {"total": total, "presensis": result}
 
 
 def get_presensis_by_murid(db: Session, murid_id: int):

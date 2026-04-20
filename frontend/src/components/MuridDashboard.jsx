@@ -632,24 +632,39 @@ function KelasDetailView({ kelas, onSelectMateri, demoPengumpulan }) {
             <div style={styles.emptyState}>
               <p style={styles.emptyText}>Belum ada data presensi</p>
             </div>
-          ) : (
-            <div style={styles.presensiList}>
-              {presensis.map(p => (
-                <div key={p.id} style={styles.presensiItem}>
-                  <span style={styles.presensiDate}>
-                    {new Date(p.tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                  </span>
-                  <span style={{
-                    ...styles.presensiBadge,
-                    backgroundColor: p.status === "hadir" ? "#E6F7E6" : p.status === "izin" ? "#FFF8E1" : "#FFEBEE",
-                    color: p.status === "hadir" ? "#2E7D32" : p.status === "izin" ? "#F57C00" : "#C62828"
-                  }}>
-                    {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
-                  </span>
+          ) : (() => {
+            const grouped = {}
+            presensis.forEach(p => {
+              const dateKey = p.tanggal
+              if (!grouped[dateKey]) grouped[dateKey] = []
+              grouped[dateKey].push(p)
+            })
+            const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a))
+            return sortedDates.map(date => {
+              const items = grouped[date]
+              const formattedDate = new Date(date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+              return (
+                <div key={date} style={styles.presensiCardNew}>
+                  <div style={styles.presensiCardHeaderNew}>
+                    <span style={styles.presensiCardIconNew}>📅</span>
+                    <span style={styles.presensiCardTitleNew}>{formattedDate}</span>
+                  </div>
+                  <div style={styles.presensiCardBodyNew}>
+                    {items.map(p => (
+                      <div key={p.id} style={p.status === "hadir" ? styles.presensiStatusRowSuccess : p.status === "izin" ? styles.presensiStatusRowWarning : styles.presensiStatusRowDanger}>
+                        <div style={p.status === "hadir" ? styles.presensiStatusIconSuccess : p.status === "izin" ? styles.presensiStatusIconWarning : styles.presensiStatusIconDanger}>
+                          {p.status === "hadir" ? "✓" : p.status === "izin" ? "!" : "✕"}
+                        </div>
+                        <span style={styles.presensiStatusLabelNew}>
+                          {p.status === "hadir" ? "Hadir" : p.status === "izin" ? "Izin" : "Absen"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+              )
+            })
+          })()}
         </div>
       )}
     </div>
@@ -2013,6 +2028,131 @@ const styles = {
   lateNoticeIcon: {
     fontSize: "1.5rem",
     color: "#DC2626",
+  },
+  presensiTable: {
+    width: "100%",
+    borderCollapse: "collapse",
+    backgroundColor: "white",
+    borderRadius: "8px",
+    overflow: "hidden",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    marginBottom: "12px",
+  },
+  presensiTableHeader: {
+    backgroundColor: "#374151",
+  },
+  presensiTableTitleCell: {
+    padding: "10px 14px",
+    color: "white",
+    fontWeight: "600",
+    fontSize: "14px",
+    textAlign: "left",
+  },
+  presensiTableRowHadir: {
+    backgroundColor: "#ECFDF5",
+  },
+  presensiTableRowIzin: {
+    backgroundColor: "#FFFBEB",
+  },
+  presensiTableRowAbsen: {
+    backgroundColor: "#FEF2F2",
+  },
+  presensiTableIconCell: {
+    width: "40px",
+    textAlign: "center",
+    padding: "8px",
+    fontWeight: "bold",
+  },
+  presensiTableLabelCell: {
+    padding: "8px",
+    fontWeight: "600",
+    fontSize: "14px",
+  },
+  presensiCardNew: {
+    backgroundColor: "white",
+    borderRadius: "16px",
+    overflow: "hidden",
+    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    border: "1px solid #E5E7EB",
+    marginBottom: "16px",
+  },
+  presensiCardHeaderNew: {
+    background: "linear-gradient(135deg, #1F4E79 0%, #2E7D32 100%)",
+    padding: "14px 18px",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+  },
+  presensiCardIconNew: {
+    fontSize: "18px",
+  },
+  presensiCardTitleNew: {
+    color: "white",
+    fontSize: "15px",
+    fontWeight: "700",
+  },
+  presensiCardBodyNew: {
+    padding: "0",
+  },
+  presensiStatusRowSuccess: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "14px 18px",
+    borderBottom: "1px solid #D1FAE5",
+    backgroundColor: "#ECFDF5",
+  },
+  presensiStatusRowWarning: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "14px 18px",
+    borderBottom: "1px solid #FEF3C7",
+    backgroundColor: "#FFFBEB",
+  },
+  presensiStatusRowDanger: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "14px 18px",
+    backgroundColor: "#FEF2F2",
+  },
+  presensiStatusIconSuccess: {
+    width: "28px",
+    height: "28px",
+    backgroundColor: "#10B981",
+    color: "white",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+  },
+  presensiStatusIconWarning: {
+    width: "28px",
+    height: "28px",
+    backgroundColor: "#F59E0B",
+    color: "white",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+  },
+  presensiStatusIconDanger: {
+    width: "28px",
+    height: "28px",
+    backgroundColor: "#EF4444",
+    color: "white",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+  },
+  presensiStatusLabelNew: {
+    fontSize: "15px",
+    fontWeight: "600",
   },
 }
 

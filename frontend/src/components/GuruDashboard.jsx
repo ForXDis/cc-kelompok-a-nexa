@@ -302,15 +302,19 @@ function GuruDashboard({ user, onLogout }) {
       return
     }
     try {
+      setLoading(true)
       if (modalData) {
         await updateKelas(modalData.id, formData)
+        setSelectedKelas({ ...selectedKelas, ...formData })
       } else {
         await createKelas(formData)
       }
-      loadKelas()
+      await loadKelas()
       closeModal()
     } catch (err) {
       setError(err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -351,15 +355,22 @@ function GuruDashboard({ user, onLogout }) {
       return
     }
     try {
+      setLoading(true)
       if (modalData) {
         await updateMateri(modalData.id, formData)
+        if (selectedMateri?.id === modalData.id) {
+          setSelectedMateri({ ...selectedMateri, ...formData })
+        }
+        await loadMateris(selectedKelas.id)
       } else {
         await createMateri({ ...formData, kelas_id: selectedKelas.id })
+        await loadMateris(selectedKelas.id)
       }
-      loadMateris(selectedKelas.id)
       closeModal()
     } catch (err) {
       setError(err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -400,15 +411,22 @@ function GuruDashboard({ user, onLogout }) {
       return
     }
     try {
+      setLoading(true)
       if (modalData) {
         await updateTugas(modalData.id, formData)
+        if (selectedTugas?.id === modalData.id) {
+          setSelectedTugas({ ...selectedTugas, ...formData })
+        }
+        await loadTugasForMateri(selectedMateri.id)
       } else {
         await createTugas({ ...formData, kelas_id: selectedKelas.id, materi_id: selectedMateri.id })
+        await loadTugasForMateri(selectedMateri.id)
       }
-      loadTugasForMateri(selectedMateri.id)
       closeModal()
     } catch (err) {
       setError(err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -484,7 +502,18 @@ function GuruDashboard({ user, onLogout }) {
 
   const handleSavePresensi = async (formData) => {
     try {
-      await createPresensi({ ...formData, kelas_id: selectedKelas.id })
+      const { tanggal, presensi } = formData
+      for (const [muridId, status] of Object.entries(presensi)) {
+        if (status) {
+          const dbStatus = status === "absen" ? "alfa" : status
+          await createPresensi({
+            kelas_id: selectedKelas.id,
+            murid_id: parseInt(muridId),
+            tanggal: tanggal,
+            status: dbStatus
+          })
+        }
+      }
       loadPresensi(selectedKelas.id)
       closeModal()
     } catch (err) {
@@ -1021,7 +1050,7 @@ function GuruDashboard({ user, onLogout }) {
       {/* Quick Presensi */}
       <div style={styles.section}>
         <div style={styles.sectionHeader}>
-          <h2 style={styles.sectionTitle}>Catat Presensi Hari Ini</h2>
+          <h2 style={styles.sectionTitle}>Riwayat Presensi ({presensiList.length} records)</h2>
           <button style={styles.addButtonSmall} onClick={() => openModal("presensi")}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="12" y1="5" x2="12" y2="19"/>
@@ -1031,23 +1060,84 @@ function GuruDashboard({ user, onLogout }) {
           </button>
         </div>
         
-        <div style={styles.presensiGrid}>
-          {enrolledMurids.length === 0 ? (
-            <div style={styles.emptyStateSmall}>Tidak ada murid terdaftar</div>
-          ) : (
-            enrolledMurids.map(enrollment => (
-              <div key={enrollment.id} style={styles.presensiCard}>
-                <div style={{...styles.muridAvatar, background: theme.gradient}}>
-                  {enrollment.murid?.name?.charAt(0).toUpperCase() || "M"}
+        <div style={styles.presensiDisplayContainer}>
+          {presensiList.length === 0 ? (
+            <div style={styles.emptyStateSmall}>Belum ada presensi untuk kelas ini</div>
+          ) : (() => {
+            const grouped = {}
+            presensiList.forEach(p => {
+              const dateKey = p.tanggal
+              if (!grouped[dateKey]) grouped[dateKey] = { hadir: [], izin: [], absen: [] }
+              const enrolled = enrolledMurids.find(e => e.murid_id === p.murid_id)
+              const muridName = p.murid?.name || enrolled?.murid?.name || "Murid " + p.murid_id
+              const student = { id: p.id, name: muridName }
+              if (p.status === "hadir") grouped[dateKey].hadir.push(student)
+              else if (p.status === "izin") grouped[dateKey].izin.push(student)
+              else grouped[dateKey].absen.push(student)
+            })
+            const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a))
+            return sortedDates.map(date => {
+              const total = grouped[date].hadir.length + grouped[date].izin.length + grouped[date].absen.length
+              const formattedDate = new Date(date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+              return (
+                <div key={date} style={styles.presensiCardNew}>
+                  <div style={styles.presensiCardHeaderNew}>
+                    <div style={styles.presensiCardTitleRow}>
+                      <span style={styles.presensiCardIconNew}>📅</span>
+                      <span style={styles.presensiCardTitleNew}>{formattedDate}</span>
+                    </div>
+                    <div style={styles.presensiCardBadgeNew}>
+                      <span style={styles.presensiCardBadgeTextNew}>{total} siswa</span>
+                    </div>
+                  </div>
+                  <div style={styles.presensiCardBodyNew}>
+                    <div style={styles.presensiStatusRowNew}>
+                      <div style={styles.presensiStatusRowIconNew}>
+                        <span style={styles.presensiStatusIconCircleSuccess}>✓</span>
+                      </div>
+                      <div style={styles.presensiStatusRowContent}>
+                        <span style={styles.presensiStatusRowLabelNew}>Hadir</span>
+                        <span style={styles.presensiStatusRowCountNew}>{grouped[date].hadir.length}</span>
+                      </div>
+                      <div style={styles.presensiStatusRowNames}>
+                        {grouped[date].hadir.length > 0 ? grouped[date].hadir.map(s => (
+                          <span key={s.id} style={styles.presensiNameTagSuccess}>{s.name}</span>
+                        )) : <span style={styles.presensiNoDataNew}>Tidak ada</span>}
+                      </div>
+                    </div>
+                    <div style={styles.presensiStatusRowNew}>
+                      <div style={styles.presensiStatusRowIconNew}>
+                        <span style={styles.presensiStatusIconCircleWarning}>!</span>
+                      </div>
+                      <div style={styles.presensiStatusRowContent}>
+                        <span style={styles.presensiStatusRowLabelNew}>Izin</span>
+                        <span style={styles.presensiStatusRowCountWarning}>{grouped[date].izin.length}</span>
+                      </div>
+                      <div style={styles.presensiStatusRowNames}>
+                        {grouped[date].izin.length > 0 ? grouped[date].izin.map(s => (
+                          <span key={s.id} style={styles.presensiNameTagWarning}>{s.name}</span>
+                        )) : <span style={styles.presensiNoDataNew}>Tidak ada</span>}
+                      </div>
+                    </div>
+                    <div style={styles.presensiStatusRowNew}>
+                      <div style={styles.presensiStatusRowIconNew}>
+                        <span style={styles.presensiStatusIconCircleDanger}>✕</span>
+                      </div>
+                      <div style={styles.presensiStatusRowContent}>
+                        <span style={styles.presensiStatusRowLabelNew}>Absen</span>
+                        <span style={styles.presensiStatusRowCountDanger}>{grouped[date].absen.length}</span>
+                      </div>
+                      <div style={styles.presensiStatusRowNames}>
+                        {grouped[date].absen.length > 0 ? grouped[date].absen.map(s => (
+                          <span key={s.id} style={styles.presensiNameTagDanger}>{s.name}</span>
+                        )) : <span style={styles.presensiNoDataNew}>Tidak ada</span>}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <span style={styles.presensiName}>{enrollment.murid?.name}</span>
-                <div style={styles.presensiButtons}>
-                  <button style={styles.hadirBtn}>Hadir</button>
-                  <button style={styles.tidakHadirBtn}>Tidak Hadir</button>
-                </div>
-              </div>
-            ))
-          )}
+              )
+            })
+          })()}
         </div>
       </div>
     </div>
@@ -1371,13 +1461,35 @@ function NilaiForm({ pengumpulan, onSave, onCancel }) {
 
 function PresensiForm({ murids, onSave, onCancel }) {
   const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0])
-  const [presensi, setPresensi] = useState({})
+  const [presensi, setPresensi] = useState(() => {
+    const initial = {}
+    murids.forEach(m => {
+      initial[m.murid_id] = "absen"
+    })
+    return initial
+  })
 
-  const togglePresensi = (muridId) => {
+  const cycleStatus = (muridId) => {
+    const current = presensi[muridId] || "absen"
+    const statusOrder = ["absen", "hadir", "izin"]
+    const currentIndex = statusOrder.indexOf(current)
+    const nextIndex = (currentIndex + 1) % statusOrder.length
+    const next = statusOrder[nextIndex]
     setPresensi(prev => ({
       ...prev,
-      [muridId]: !prev[muridId]
+      [muridId]: next
     }))
+  }
+
+  const getStatusLabel = (status) => {
+    const labels = { hadir: "Hadir", izin: "Izin", absen: "Absen" }
+    return labels[status || "absen"] || "Absen"
+  }
+
+  const getStatusStyle = (status) => {
+    if (status === "hadir") return styles.hadirBtnActive
+    if (status === "izin") return styles.izinBtnActive
+    return styles.absenBtnActive
   }
 
   const handleSubmit = (e) => {
@@ -1405,10 +1517,10 @@ function PresensiForm({ murids, onSave, onCancel }) {
               <span>{enrollment.murid?.name}</span>
               <button 
                 type="button"
-                style={presensi[enrollment.murid_id] ? styles.hadirBtnActive : styles.hadirBtnInactive}
-                onClick={() => togglePresensi(enrollment.murid_id)}
+                style={getStatusStyle(presensi[enrollment.murid_id])}
+                onClick={() => cycleStatus(enrollment.murid_id)}
               >
-                {presensi[enrollment.murid_id] ? "Hadir" : "Tidak Hadir"}
+                {getStatusLabel(presensi[enrollment.murid_id])}
               </button>
             </div>
           ))}
@@ -2180,7 +2292,7 @@ const styles = {
     fontWeight: "500",
     fontSize: "12px",
   },
-  tidakHadirBtn: {
+  absenBtn: {
     padding: "6px 12px",
     backgroundColor: "#FEE2E2",
     color: "#DC2626",
@@ -2351,6 +2463,36 @@ const styles = {
     fontWeight: "500",
     fontSize: "12px",
   },
+  tidakHadirBtnActive: {
+    padding: "6px 16px",
+    backgroundColor: "#DC2626",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "500",
+    fontSize: "12px",
+  },
+  izinBtnActive: {
+    padding: "6px 16px",
+    backgroundColor: "#F59E0B",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "500",
+    fontSize: "12px",
+  },
+  absenBtnActive: {
+    padding: "6px 16px",
+    backgroundColor: "#DC2626",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "500",
+    fontSize: "12px",
+  },
 }
 
 // Add keyframes for animations
@@ -2368,6 +2510,447 @@ styleSheet.textContent = `
     transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0,0,0,0.1);
   }
+  presensiGroup: {
+    marginBottom: "24px",
+    padding: "16px",
+    backgroundColor: "#F9FAFB",
+    borderRadius: "12px",
+  },
+  presensiDateHeader: {
+    fontSize: "16px",
+    fontWeight: "600",
+    color: "#1F2937",
+    marginBottom: "12px",
+    paddingBottom: "8px",
+    borderBottom: "1px solid #E5E7EB",
+  },
+  presensiStatusGroup: {
+    marginTop: "8px",
+  },
+  presensiStatusLabelHadir: {
+    display: "block",
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#059669",
+    marginBottom: "4px",
+  },
+  presensiStatusLabelIzin: {
+    display: "block",
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#D97706",
+    marginBottom: "4px",
+  },
+  presensiStatusLabelAbsen: {
+    display: "block",
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#DC2626",
+    marginBottom: "4px",
+  },
+  presensiStatusList: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "8px",
+  },
+  presensiBadgeHadir: {
+    padding: "4px 12px",
+    backgroundColor: "#D1FAE5",
+    color: "#059669",
+    borderRadius: "16px",
+    fontSize: "13px",
+    fontWeight: "500",
+  },
+  presensiBadgeIzin: {
+    padding: "4px 12px",
+    backgroundColor: "#FEF3C7",
+    color: "#D97706",
+    borderRadius: "16px",
+    fontSize: "13px",
+    fontWeight: "500",
+  },
+  presensiBadgeAbsen: {
+    padding: "4px 12px",
+    backgroundColor: "#FEE2E2",
+    color: "#DC2626",
+    borderRadius: "16px",
+    fontSize: "13px",
+    fontWeight: "500",
+  },
+  presensiDateCard: {
+    backgroundColor: "white",
+    borderRadius: "12px",
+    padding: "16px",
+    marginBottom: "16px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+  },
+  presensiDateTitle: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "12px",
+    paddingBottom: "8px",
+    borderBottom: "2px solid #E5E7EB",
+  },
+  presensiDateText: {
+    fontSize: "16px",
+    fontWeight: "700",
+    color: "#1F2937",
+  },
+  presensiTotalCount: {
+    fontSize: "14px",
+    color: "#6B7280",
+    backgroundColor: "#F3F4F6",
+    padding: "4px 10px",
+    borderRadius: "12px",
+  },
+  presensiStatusRows: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+  },
+  presensiRowHadir: {
+    backgroundColor: "#ECFDF5",
+    borderRadius: "8px",
+    padding: "10px 12px",
+    borderLeft: "4px solid #10B981",
+  },
+  presensiRowIzin: {
+    backgroundColor: "#FFFBEB",
+    borderRadius: "8px",
+    padding: "10px 12px",
+    borderLeft: "#F59E0B",
+    borderLeftWidth: "4px",
+    borderLeftStyle: "solid",
+  },
+  presensiRowAbsen: {
+    backgroundColor: "#FEF2F2",
+    borderRadius: "8px",
+    padding: "10px 12px",
+    borderLeft: "4px solid #EF4444",
+  },
+  presensiRowHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    marginBottom: "6px",
+  },
+  presensiRowIconHadir: {
+    width: "20px",
+    height: "20px",
+    backgroundColor: "#10B981",
+    color: "white",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "12px",
+    fontWeight: "bold",
+  },
+  presensiRowIconIzin: {
+    width: "20px",
+    height: "20px",
+    backgroundColor: "#F59E0B",
+    color: "white",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "12px",
+    fontWeight: "bold",
+  },
+  presensiRowIconAbsen: {
+    width: "20px",
+    height: "20px",
+    backgroundColor: "#EF4444",
+    color: "white",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "12px",
+    fontWeight: "bold",
+  },
+  presensiRowLabelHadir: {
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#065F46",
+    flex: 1,
+  },
+  presensiRowLabelIzin: {
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#92400E",
+    flex: 1,
+  },
+  presensiRowLabelAbsen: {
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#991B1B",
+    flex: 1,
+  },
+  presensiRowCount: {
+    fontSize: "14px",
+    fontWeight: "700",
+    color: "#10B981",
+  },
+  presensiRowCountIzin: {
+    fontSize: "14px",
+    fontWeight: "700",
+    color: "#F59E0B",
+  },
+  presensiRowCountAbsen: {
+    fontSize: "14px",
+    fontWeight: "700",
+    color: "#EF4444",
+  },
+  presensiRowNames: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "6px",
+  },
+  presensiNameBadgeHadir: {
+    padding: "4px 10px",
+    backgroundColor: "white",
+    color: "#065F46",
+    borderRadius: "14px",
+    fontSize: "13px",
+    fontWeight: "500",
+    border: "1px solid #A7F3D0",
+  },
+  presensiNameBadgeIzin: {
+    padding: "4px 10px",
+    backgroundColor: "white",
+    color: "#92400E",
+    borderRadius: "14px",
+    fontSize: "13px",
+    fontWeight: "500",
+    border: "1px solid #FDE68A",
+  },
+  presensiNameBadgeAbsen: {
+    padding: "4px 10px",
+    backgroundColor: "white",
+    color: "#991B1B",
+    borderRadius: "14px",
+    fontSize: "13px",
+    fontWeight: "500",
+    border: "1px solid #FECACA",
+  },
+  presensiNoData: {
+    color: "#9CA3AF",
+    fontSize: "13px",
+    fontStyle: "italic",
+  },
+  presensiDisplayContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
+  },
+  presensiTable: {
+    width: "100%",
+    borderCollapse: "collapse",
+    backgroundColor: "white",
+    borderRadius: "8px",
+    overflow: "hidden",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+  },
+  presensiTableHeader: {
+    backgroundColor: "#374151",
+  },
+  presensiTableTitleCell: {
+    padding: "12px 16px",
+    color: "white",
+    fontWeight: "600",
+    fontSize: "15px",
+    textAlign: "left",
+  },
+  presensiTableRowHadir: {
+    backgroundColor: "#ECFDF5",
+    borderBottom: "1px solid #D1FAE5",
+  },
+  presensiTableRowIzin: {
+    backgroundColor: "#FFFBEB",
+    borderBottom: "1px solid #FEF3C7",
+  },
+  presensiTableRowAbsen: {
+    backgroundColor: "#FEF2F2",
+  },
+  presensiTableIconCell: {
+    width: "40px",
+    textAlign: "center",
+    padding: "10px 8px",
+    fontWeight: "bold",
+    fontSize: "16px",
+  },
+  presensiTableLabelCell: {
+    width: "120px",
+    padding: "10px 8px",
+    fontWeight: "600",
+    fontSize: "14px",
+  },
+  presensiTableNameCell: {
+    padding: "10px 16px",
+    fontSize: "14px",
+    color: "#374151",
+  },
+  presensiDisplayContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px",
+  },
+  presensiCardNew: {
+    backgroundColor: "white",
+    borderRadius: "16px",
+    overflow: "hidden",
+    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    border: "1px solid #E5E7EB",
+  },
+  presensiCardHeaderNew: {
+    background: "linear-gradient(135deg, #667EEA 0%, #764BA2 100%)",
+    padding: "16px 20px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  presensiCardTitleRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+  },
+  presensiCardIconNew: {
+    fontSize: "20px",
+  },
+  presensiCardTitleNew: {
+    color: "white",
+    fontSize: "16px",
+    fontWeight: "700",
+  },
+  presensiCardBadgeNew: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    padding: "6px 12px",
+    borderRadius: "20px",
+  },
+  presensiCardBadgeTextNew: {
+    color: "white",
+    fontSize: "13px",
+    fontWeight: "600",
+  },
+  presensiCardBodyNew: {
+    padding: "0",
+  },
+  presensiStatusRowNew: {
+    display: "flex",
+    alignItems: "flex-start",
+    padding: "14px 20px",
+    borderBottom: "1px solid #F3F4F6",
+    gap: "14px",
+  },
+  presensiStatusRowIconNew: {
+    width: "36px",
+    height: "36px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  presensiStatusIconCircleSuccess: {
+    width: "28px",
+    height: "28px",
+    backgroundColor: "#10B981",
+    color: "white",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "14px",
+    fontWeight: "bold",
+  },
+  presensiStatusIconCircleWarning: {
+    width: "28px",
+    height: "28px",
+    backgroundColor: "#F59E0B",
+    color: "white",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "14px",
+    fontWeight: "bold",
+  },
+  presensiStatusIconCircleDanger: {
+    width: "28px",
+    height: "28px",
+    backgroundColor: "#EF4444",
+    color: "white",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "14px",
+    fontWeight: "bold",
+  },
+  presensiStatusRowContent: {
+    flex: "0 0 80px",
+  },
+  presensiStatusRowLabelNew: {
+    display: "block",
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#374151",
+  },
+  presensiStatusRowCountNew: {
+    fontSize: "18px",
+    fontWeight: "700",
+    color: "#10B981",
+  },
+  presensiStatusRowCountWarning: {
+    fontSize: "18px",
+    fontWeight: "700",
+    color: "#F59E0B",
+  },
+  presensiStatusRowCountDanger: {
+    fontSize: "18px",
+    fontWeight: "700",
+    color: "#EF4444",
+  },
+  presensiStatusRowNames: {
+    flex: 1,
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "8px",
+  },
+  presensiNameTagSuccess: {
+    padding: "4px 12px",
+    backgroundColor: "#D1FAE5",
+    color: "#065F46",
+    borderRadius: "16px",
+    fontSize: "13px",
+    fontWeight: "500",
+    border: "1px solid #A7F3D0",
+  },
+  presensiNameTagWarning: {
+    padding: "4px 12px",
+    backgroundColor: "#FEF3C7",
+    color: "#92400E",
+    borderRadius: "16px",
+    fontSize: "13px",
+    fontWeight: "500",
+    border: "1px solid #FDE68A",
+  },
+  presensiNameTagDanger: {
+    padding: "4px 12px",
+    backgroundColor: "#FEE2E2",
+    color: "#991B1B",
+    borderRadius: "16px",
+    fontSize: "13px",
+    fontWeight: "500",
+    border: "1px solid #FECACA",
+  },
+  presensiNoDataNew: {
+    color: "#9CA3AF",
+    fontSize: "13px",
+    fontStyle: "italic",
+  },
 `
 document.head.appendChild(styleSheet)
 

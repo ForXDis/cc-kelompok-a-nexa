@@ -173,13 +173,7 @@ def update_kelas(kelas_id: int, kelas_data: KelasUpdate, db: Session = Depends(g
     if kelas.guru_id != current_user.id:
         raise HTTPException(status_code=403, detail="Anda bukan guru kelas ini")
     updated = crud.update_kelas(db=db, kelas_id=kelas_id, kelas_data=kelas_data)
-    return {
-        "id": updated.id,
-        "nama_kelas": updated.nama_kelas,
-        "deskripsi": updated.deskripsi,
-        "guru_id": updated.guru_id,
-        "created_at": updated.created_at.isoformat() if updated.created_at else None,
-    }
+    return updated
 
 
 @app.delete("/kelas/{kelas_id}", status_code=204)
@@ -425,8 +419,6 @@ def create_presensi(presensi_data: PresensiCreate, db: Session = Depends(get_db)
     if kelas.guru_id != current_user.id:
         raise HTTPException(status_code=403, detail="Anda bukan guru kelas ini")
     presensi = crud.create_presensi(db=db, presensi_data=presensi_data)
-    if not presensi:
-        raise HTTPException(status_code=400, detail="Presensi sudah ada untuk murid ini pada tanggal ini")
     return presensi
 
 
