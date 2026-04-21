@@ -1119,6 +1119,70 @@ const TugasDetailView = ({
   )
 }
 
+const PresensiView = ({ presensiList, enrolledMurids, onAddPresensi, isMobile }) => {
+  const styles = getStyles(isMobile)
+
+  return (
+    <div>
+      <div style={styles.sectionHeader}>
+        <h3 style={styles.sectionSubtitle}>Daftar Presensi</h3>
+        <Button variant="primary" size="sm" onClick={onAddPresensi}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Tambah Presensi
+        </Button>
+      </div>
+
+      {presensiList.length === 0 ? (
+        <EmptyState
+          icon={
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          }
+          title="Belum Ada Presensi"
+          description="Tambahkan presensi untuk kelas ini"
+          action={
+            <Button variant="primary" onClick={onAddPresensi}>
+              Tambah Presensi Pertama
+            </Button>
+          }
+        />
+      ) : (
+        <div style={styles.listContainer}>
+          {presensiList.map((p) => (
+            <Card key={p.id} padding="md" style={styles.listItem}>
+              <div style={styles.listItemContent}>
+                <div style={styles.listItemIcon}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                </div>
+                <div style={styles.listItemText}>
+                  <h4 style={styles.listItemTitle}>
+                    {new Date(p.tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  </h4>
+                  <p style={styles.listItemDesc}>
+                    Murid: {p.murid?.name || 'Unknown'} - Status: <strong>{p.status?.charAt(0).toUpperCase() + p.status?.slice(1)}</strong>
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Modal Component
 const Modal = ({ type, data, onClose, onSaveKelas, onSaveMateri, onSaveTugas, onSaveNilai, onSavePresensi, enrolledMurids, isMobile }) => {
   const styles = getStyles(isMobile)
@@ -1608,6 +1672,44 @@ const getStyles = (isMobile) => ({
     marginBottom: theme.spacing[2],
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text.secondary,
+  },
+  presensiFormSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing[3],
+  },
+  presensiFormLabel: {
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing[2],
+  },
+  presensiFormList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing[2],
+  },
+  presensiFormItem: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: theme.spacing[3],
+    backgroundColor: theme.colors.background.elevated,
+    borderRadius: theme.borderRadius.lg,
+  },
+  presensiFormName: {
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.medium,
+    color: theme.colors.text.primary,
+  },
+  presensiStatusBtn: {
+    padding: `${theme.spacing[2]} ${theme.spacing[4]}`,
+    borderRadius: theme.borderRadius.lg,
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.semibold,
+    transition: `all ${theme.transitions.fast}`,
   },
 })
 
