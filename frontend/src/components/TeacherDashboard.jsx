@@ -896,28 +896,28 @@ const KelasDetailView = ({
                     e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)'
                   }}
                 >
-                  <Card padding="md" style={{ ...styles.listItem, boxShadow: 'none' }}>
-                    <div style={styles.listItemContent}>
-                      <div style={styles.listItemIcon}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                          <polyline points="14 2 14 8 20 8" />
-                        </svg>
-                      </div>
-                      <div style={styles.listItemText}>
-                        <h4 style={styles.listItemTitle}>{materi.judul}</h4>
-                        <p style={styles.listItemDesc}>{materi.konten?.substring(0, 100)}...</p>
-                      </div>
-                    </div>
-                    <div style={styles.listItemActions}>
-                      <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); onEditMateri(materi) }}>
-                        Edit
-                      </Button>
-                      <Button variant="danger" size="sm" onClick={(e) => { e.stopPropagation(); onDeleteMateri(materi.id) }}>
-                        Hapus
-                      </Button>
-                    </div>
-                  </Card>
+              <Card padding="md" style={{ ...styles.listItem, boxShadow: 'none', width: '100%' }}>
+                <div style={styles.listItemContent}>
+                  <div style={styles.listItemIcon}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                  </div>
+                  <div style={styles.listItemText}>
+                    <h4 style={styles.listItemTitle}>{materi.judul}</h4>
+                    <p style={styles.listItemDesc}>{materi.konten?.substring(0, 100)}...</p>
+                  </div>
+                </div>
+                <div style={styles.listItemActions}>
+                  <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); onEditMateri(materi) }}>
+                    Edit
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={(e) => { e.stopPropagation(); onDeleteMateri(materi.id) }}>
+                    Hapus
+                  </Button>
+                </div>
+              </Card>
                 </div>
               ))}
             </div>
@@ -1026,33 +1026,48 @@ const MateriDetailView = ({
       ) : (
         <div style={styles.listContainer}>
           {tugasList.map((tugas) => (
-            <Card key={tugas.id} padding="md" style={styles.listItem}>
-              <div style={styles.listItemContent}>
-                <div style={{ ...styles.listItemIcon, backgroundColor: theme.colors.warning.light, color: theme.colors.warning.dark }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M9 11l3 3L22 4" />
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                  </svg>
+            <div
+              key={tugas.id}
+              onClick={() => onSelectTugas(tugas)}
+              style={{
+                ...styles.listItem,
+                cursor: 'pointer',
+                transition: `all ${theme.transitions.fast}`,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.1)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              <Card padding="md" style={{ ...styles.listItem, boxShadow: 'none', width: '100%' }}>
+                <div style={styles.listItemContent}>
+                  <div style={{ ...styles.listItemIcon, backgroundColor: theme.colors.warning.light, color: theme.colors.warning.dark }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 11l3 3L22 4" />
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                    </svg>
+                  </div>
+                  <div style={styles.listItemText}>
+                    <h4 style={styles.listItemTitle}>{tugas.judul}</h4>
+                    <p style={styles.listItemDesc}>
+                      Deadline: {new Date(tugas.deadline).toLocaleDateString('id-ID')}
+                    </p>
+                  </div>
                 </div>
-                <div style={styles.listItemText}>
-                  <h4 style={styles.listItemTitle}>{tugas.judul}</h4>
-                  <p style={styles.listItemDesc}>
-                    Deadline: {new Date(tugas.deadline).toLocaleDateString('id-ID')}
-                  </p>
+                <div style={styles.listItemActions}>
+                  <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); onEditTugas(tugas) }}>
+                    Edit
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={(e) => { e.stopPropagation(); onDeleteTugas(tugas.id) }}>
+                    Hapus
+                  </Button>
                 </div>
-              </div>
-              <div style={styles.listItemActions}>
-                <Button variant="primary" size="sm" onClick={() => onSelectTugas(tugas)}>
-                  Lihat
-                </Button>
-                <Button variant="secondary" size="sm" onClick={() => onEditTugas(tugas)}>
-                  Edit
-                </Button>
-                <Button variant="danger" size="sm" onClick={() => onDeleteTugas(tugas.id)}>
-                  Hapus
-                </Button>
-              </div>
-            </Card>
+              </Card>
+            </div>
           ))}
         </div>
       )}
@@ -1529,6 +1544,8 @@ const getStyles = (isMobile) => ({
     justifyContent: 'space-between',
     flexDirection: isMobile ? 'column' : 'row',
     gap: theme.spacing[4],
+    width: '100%',
+    boxSizing: 'border-box',
   },
   listItemContent: {
     display: 'flex',
