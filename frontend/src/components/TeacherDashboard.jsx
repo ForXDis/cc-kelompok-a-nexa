@@ -879,31 +879,46 @@ const KelasDetailView = ({
           ) : (
             <div style={styles.listContainer}>
               {materis.map((materi) => (
-                <Card key={materi.id} padding="md" style={styles.listItem}>
-                  <div style={styles.listItemContent}>
-                    <div style={styles.listItemIcon}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                      </svg>
+                <div
+                  key={materi.id}
+                  onClick={() => onSelectMateri(materi)}
+                  style={{
+                    ...styles.listItem,
+                    cursor: 'pointer',
+                    transition: `all ${theme.transitions.fast}`,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.1)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)'
+                  }}
+                >
+                  <Card padding="md" style={{ ...styles.listItem, boxShadow: 'none' }}>
+                    <div style={styles.listItemContent}>
+                      <div style={styles.listItemIcon}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                      </div>
+                      <div style={styles.listItemText}>
+                        <h4 style={styles.listItemTitle}>{materi.judul}</h4>
+                        <p style={styles.listItemDesc}>{materi.konten?.substring(0, 100)}...</p>
+                      </div>
                     </div>
-                    <div style={styles.listItemText}>
-                      <h4 style={styles.listItemTitle}>{materi.judul}</h4>
-                      <p style={styles.listItemDesc}>{materi.konten?.substring(0, 100)}...</p>
+                    <div style={styles.listItemActions}>
+                      <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); onEditMateri(materi) }}>
+                        Edit
+                      </Button>
+                      <Button variant="danger" size="sm" onClick={(e) => { e.stopPropagation(); onDeleteMateri(materi.id) }}>
+                        Hapus
+                      </Button>
                     </div>
-                  </div>
-                  <div style={styles.listItemActions}>
-                    <Button variant="primary" size="sm" onClick={() => onSelectMateri(materi)}>
-                      Lihat
-                    </Button>
-                    <Button variant="secondary" size="sm" onClick={() => onEditMateri(materi)}>
-                      Edit
-                    </Button>
-                    <Button variant="danger" size="sm" onClick={() => onDeleteMateri(materi.id)}>
-                      Hapus
-                    </Button>
-                  </div>
-                </Card>
+                  </Card>
+                </div>
               ))}
             </div>
           )}
