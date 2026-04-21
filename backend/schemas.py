@@ -233,6 +233,7 @@ class MateriListResponse(BaseModel):
 
 class TugasCreate(BaseModel):
     kelas_id: int
+    materi_id: Optional[int] = None
     judul: str = Field(..., min_length=1, max_length=200)
     deskripsi: Optional[str] = None
     deadline: datetime
@@ -247,6 +248,7 @@ class TugasUpdate(BaseModel):
 class TugasResponse(BaseModel):
     id: int
     kelas_id: int
+    materi_id: Optional[int]
     judul: str
     deskripsi: Optional[str]
     deadline: datetime

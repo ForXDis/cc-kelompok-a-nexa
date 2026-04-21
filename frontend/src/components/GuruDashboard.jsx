@@ -235,9 +235,15 @@ function GuruDashboard({ user, onLogout }) {
     }
     try {
       const data = await fetchTugas(selectedKelas.id)
-      // Filter by materi_id if available
-      const filtered = (data.tugass || []).filter(t => t.materi_id === materiId)
-      setTugasList(filtered.length > 0 ? filtered : data.tugass || [])
+      const allTugas = data.tugass || []
+      console.log("All tugas for kelas:", allTugas)
+      console.log("Filtering for materiId:", materiId, "type:", typeof materiId)
+      const filtered = allTugas.filter(t => {
+        const tugasMateriId = t.materi_id
+        return tugasMateriId === materiId
+      })
+      console.log("Filtered tugas:", filtered)
+      setTugasList(filtered)
     } catch (err) {
       console.error("Error load tugas:", err)
     }

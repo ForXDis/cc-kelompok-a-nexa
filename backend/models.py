@@ -85,6 +85,7 @@ class Materi(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     kelas = relationship("Kelas", back_populates="materis")
+    tugass = relationship("Tugas", back_populates="materi")
 
 
 class Tugas(Base):
@@ -92,12 +93,14 @@ class Tugas(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     kelas_id = Column(Integer, ForeignKey("kelas.id"), nullable=False)
+    materi_id = Column(Integer, ForeignKey("materi.id"), nullable=True)
     judul = Column(String(200), nullable=False)
     deskripsi = Column(Text, nullable=True)
     deadline = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     kelas = relationship("Kelas", back_populates="tugass")
+    materi = relationship("Materi", back_populates="tugass")
     pengumpulan_list = relationship("Pengumpulan", back_populates="tugas", cascade="all, delete-orphan")
 
 
